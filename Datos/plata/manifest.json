@@ -1,0 +1,43 @@
+{
+  "dataset": "Operación de plata — SIMULADO",
+  "provenance": "Datos sintéticos creados exclusivamente para este taller. No representan operaciones, mediciones, unidades ni resultados de Peñoles.",
+  "format": "CSV UTF-8, coma, encabezado; NULL representa un valor ausente.",
+  "total_records": 72,
+  "expected_valid": 66,
+  "expected_rejected": 6,
+  "batches": [
+    {
+      "file": "datos/lote_001.csv",
+      "records": 24,
+      "valid": 22,
+      "rejected": 2,
+      "rejected_event_ids": [
+        "AG-DEMO-0005",
+        "AG-DEMO-0013"
+      ],
+      "sha256": "29f970d783ae44e2f7b4a4874fdac95cd1dcdb5b44a3339ffc6a1de91848041b"
+    },
+    {
+      "file": "datos/lote_002.csv",
+      "records": 24,
+      "valid": 22,
+      "rejected": 2,
+      "rejected_event_ids": [
+        "AG-DEMO-0029",
+        "AG-DEMO-0037"
+      ],
+      "sha256": "a850c507cf5928eeae036cce896c9dd50c9b3c69ef38ef32623a2a714e8d2151"
+    },
+    {
+      "file": "datos/lote_003.csv",
+      "records": 24,
+      "valid": 22,
+      "rejected": 2,
+      "rejected_event_ids": [
+        "AG-DEMO-0053",
+        "AG-DEMO-0061"
+      ],
+      "sha256": "1af1cc07d5427e716e7560735da7fc727865b9271004d1813e329451ed87b283"
+    }
+  ]
+}

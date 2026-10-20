@@ -1,0 +1,21 @@
+# Solo el material de entrega.
+/*
+!/.gitignore
+!/README.md
+!/OnDemand/
+!/InSitu/
+!/Datos/
+!/Templates/
+
+# Datos voluminosos reproducibles y archivos locales.
+/Datos/plata/ampliado/
+**/__pycache__/
+*.pyc
+.DS_Store
+*.log
+*.keytab
+*.pem
+*.pdf
+*.ppt
+*.pptx
+.env

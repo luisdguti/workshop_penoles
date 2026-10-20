@@ -1,0 +1,5166 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Laboratorio Cloudera DataFlow (Apache NiFi) · Peñoles</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      window.addEventListener(
+        "error",
+        function (e) {
+          var t = e.target;
+          if (t && t.tagName === "IMG") {
+            t.classList.add("broken");
+          }
+        },
+        true,
+      );
+    </script>
+    <style>
+      :root {
+        --or: #ff550c;
+        --or2: #ff7a3d;
+        --teal: #100045;
+        --teal-d: #100045;
+        --pu: #5555f9;
+        --ink: #1c1840;
+        --mut: #565279;
+        --line: #dddcf2;
+        --soft: #f5f5fd;
+        --code: #f2f2fb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #07031f;
+        font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+      }
+      #stage {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      body.fs #stage {
+        bottom: 0;
+      }
+      #deck {
+        width: 1280px;
+        height: 720px;
+        position: relative;
+        flex: none;
+        transform-origin: center center;
+      }
+      .slide {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        display: none;
+        overflow: hidden;
+        border-radius: 4px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+      }
+      .slide.active {
+        display: block;
+      }
+      body.fs .slide {
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .topbar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 6px;
+        background: linear-gradient(
+          90deg,
+          var(--or),
+          var(--or2) 60%,
+          var(--pu)
+        );
+      }
+      .hdr {
+        position: absolute;
+        left: 56px;
+        right: 56px;
+        top: 26px;
+        min-height: 64px;
+      }
+      .hdr h2 {
+        margin: 6px 0 0;
+        font-size: 29px;
+        line-height: 1.15;
+        color: var(--teal-d);
+        font-weight: 750;
+        letter-spacing: -0.3px;
+      }
+      .mtag {
+        display: inline-block;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        color: var(--or);
+      }
+      .body {
+        position: absolute;
+        left: 56px;
+        right: 56px;
+        top: 112px;
+        bottom: 50px;
+        overflow: hidden;
+      }
+      .ftr {
+        position: absolute;
+        left: 56px;
+        right: 56px;
+        bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 11.5px;
+        color: #8b88b0;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 30px;
+        height: 100%;
+      }
+      .cols.wide {
+        grid-template-columns: 0.9fr 1.35fr;
+      }
+      .txt {
+        overflow: hidden;
+        font-size: 16.5px;
+        line-height: 1.45;
+      }
+      .txt.full {
+        columns: 1;
+        max-width: 1100px;
+      }
+      .lead {
+        margin: 0 0 12px;
+        color: var(--mut);
+        font-size: 16.5px;
+      }
+      ol.steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      ol.steps > li {
+        counter-increment: st;
+        position: relative;
+        padding: 0 0 0 38px;
+        margin: 0 0 9px;
+      }
+      ol.steps > li::before {
+        content: counter(st);
+        position: absolute;
+        left: 0;
+        top: 1px;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: var(--or);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      ol.steps ul {
+        margin: 4px 0 0;
+        padding-left: 18px;
+      }
+      ol.steps ul li {
+        margin: 2px 0;
+      }
+      ul.bul {
+        margin: 0;
+        padding-left: 22px;
+      }
+      ul.bul li {
+        margin: 0 0 8px;
+      }
+      ul.bul li::marker {
+        color: var(--or);
+      }
+      code,
+      .k {
+        font-family: "JetBrains Mono", Consolas, Menlo, monospace;
+        font-size: 0.86em;
+        background: var(--code);
+        color: #100045;
+        padding: 1px 6px;
+        border-radius: 4px;
+        border: 1px solid #e3e2f5;
+        white-space: nowrap;
+      }
+      pre.code {
+        font-family: "JetBrains Mono", Consolas, Menlo, monospace;
+        background: #100045;
+        color: #ecebff;
+        font-size: 13px;
+        line-height: 1.45;
+        padding: 12px 14px;
+        border-radius: 6px;
+        margin: 10px 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border-left: 4px solid var(--or);
+      }
+      b.ui {
+        color: var(--teal-d);
+      }
+      .shots {
+        display: grid;
+        gap: 10px;
+        height: 100%;
+        min-height: 0;
+      }
+      .shots.g1 {
+        grid-template-rows: 1fr;
+      }
+      .shots.g2 {
+        grid-template-rows: 1fr 1fr;
+      }
+      .shots.g4 {
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: 1fr;
+      }
+      figure.shot {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px;
+      }
+      figure.shot img {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        object-fit: contain;
+        cursor: zoom-in;
+        border-radius: 4px;
+      }
+      figure.shot figcaption {
+        font-size: 11.5px;
+        color: var(--mut);
+        margin-top: 5px;
+        text-align: center;
+      }
+      img.broken {
+        visibility: hidden;
+      }
+      figure.shot:has(img.broken)::before {
+        content: "Imagen no disponible (requiere conexión a internet)";
+        color: #9a97c2;
+        font-size: 12px;
+        margin: auto;
+      }
+      .call {
+        color: var(--ink);
+        border-radius: 6px;
+        padding: 9px 13px;
+        margin: 10px 0 0;
+        font-size: 14.5px;
+        line-height: 1.4;
+        border-left: 4px solid;
+      }
+      .call > b {
+        display: block;
+        font-size: 11.5px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+      }
+      .call.note {
+        background: #eeeefe;
+        border-color: var(--pu);
+      }
+      .call.note b {
+        color: var(--pu);
+      }
+      .call.tip {
+        background: #ecebf7;
+        border-color: var(--teal);
+      }
+      .call.tip b {
+        color: var(--teal);
+      }
+      .call.warn {
+        background: #ffefe7;
+        border-color: var(--or);
+      }
+      .call.warn b {
+        color: #c23e00;
+      }
+      .call.pen {
+        background: #fff8e1;
+        border-color: #c89b00;
+      }
+      .call.pen b {
+        color: #8a6a00;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 10px;
+      }
+      .chip {
+        font-size: 12.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 14px;
+        background: #ffefe7;
+        color: #b83a00;
+        border: 1px solid #ffcdb6;
+      }
+      .chip.w {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      .chip.t {
+        background: #eeeefe;
+        color: var(--teal-d);
+        border-color: #d3d3fb;
+      }
+      /* flujos */
+      .flow {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        row-gap: 14px;
+      }
+      .proc {
+        background: #fff;
+        border: 1.5px solid #d6d5ee;
+        border-left: 6px solid var(--or);
+        border-radius: 7px;
+        padding: 7px 11px;
+        min-width: 118px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+      }
+      .proc b {
+        display: block;
+        font-size: 13.5px;
+        color: var(--teal-d);
+      }
+      .proc small {
+        display: block;
+        font-size: 11px;
+        color: var(--mut);
+        margin-top: 1px;
+      }
+      .proc.port {
+        border-left-color: var(--pu);
+      }
+      .proc.ext {
+        border-left-color: var(--teal);
+        background: #f5f5ff;
+      }
+      .proc.cs {
+        border-left-color: #8a6a00;
+        background: #fffaf0;
+      }
+      .proc.fun {
+        border-radius: 30px;
+        min-width: 70px;
+        text-align: center;
+        border-left-width: 1.5px;
+        border-color: var(--pu);
+      }
+      .arr {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 64px;
+        padding: 0 2px;
+      }
+      .arr span {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--or);
+        font-family: Consolas, monospace;
+        white-space: nowrap;
+      }
+      .arr i {
+        display: block;
+        width: 100%;
+        height: 2px;
+        background: #a3a1cf;
+        position: relative;
+        margin-top: 2px;
+      }
+      .arr i::after {
+        content: "";
+        position: absolute;
+        right: -1px;
+        top: -4px;
+        border: 5px solid transparent;
+        border-left: 8px solid #a3a1cf;
+        border-right: 0;
+      }
+      .seg {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .flow.sm .arr {
+        min-width: 44px;
+      }
+      .flow.sm .proc {
+        min-width: 90px;
+        padding: 5px 8px;
+      }
+      .flow.sm .proc b {
+        font-size: 12px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .card h4 {
+        margin: 0 0 6px;
+        color: var(--teal-d);
+        font-size: 16px;
+      }
+      .card p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #3a3660;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .grid3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .grid4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+      .ico {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: var(--or);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        margin-bottom: 8px;
+        font-size: 15px;
+      }
+      .ico.t {
+        background: var(--teal);
+      }
+      .ico.p {
+        background: var(--pu);
+      }
+      table.t {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      table.t th {
+        background: var(--teal-d);
+        color: #fff;
+        text-align: left;
+        padding: 7px 10px;
+        font-weight: 600;
+      }
+      table.t td {
+        border-bottom: 1px solid var(--line);
+        padding: 6px 10px;
+        vertical-align: top;
+      }
+      table.t tr:nth-child(even) td {
+        background: #f8f8fe;
+      }
+      /* portada y secciones */
+      .slide.sec,
+      .slide.cover {
+        background:
+          radial-gradient(
+            1200px 600px at 85% 110%,
+            rgba(255, 85, 12, 0.35),
+            transparent 60%
+          ),
+          linear-gradient(135deg, #1e1470 0%, #100045 55%, #0a002e 100%);
+        color: #fff;
+      }
+      .sec .ftr,
+      .cover .ftr {
+        color: rgba(255, 255, 255, 0.55);
+      }
+      .sec-l {
+        position: absolute;
+        left: 64px;
+        top: 44px;
+        bottom: 60px;
+        width: 560px;
+      }
+      .sec-r {
+        position: absolute;
+        right: 56px;
+        top: 120px;
+        bottom: 70px;
+        width: 540px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12px;
+      }
+      .logo {
+        height: 30px;
+        display: flex;
+        align-items: center;
+      }
+      .logo img {
+        height: 26px;
+      }
+      .logo .logo-txt {
+        display: none;
+        font-weight: 800;
+        letter-spacing: 3px;
+      }
+      .logo img.broken {
+        display: none;
+      }
+      .logo img.broken + .logo-txt {
+        display: inline;
+      }
+      .blq {
+        margin-top: 40px;
+        font-size: 13px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--or2);
+        font-weight: 700;
+      }
+      .num {
+        font-size: 92px;
+        font-weight: 800;
+        line-height: 1;
+        color: var(--or);
+        margin-top: 6px;
+        letter-spacing: -3px;
+      }
+      .sec h1 {
+        font-size: 40px;
+        line-height: 1.1;
+        margin: 6px 0 16px;
+        font-weight: 750;
+        letter-spacing: -0.5px;
+      }
+      .obj {
+        font-size: 17px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.88);
+        margin: 0 0 10px;
+      }
+      .build {
+        font-size: 15px;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.8);
+        margin: 0 0 6px;
+      }
+      .build b {
+        color: var(--or2);
+      }
+      .sec-r .panel {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 12px;
+        padding: 18px;
+        color: var(--ink);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      }
+      .sec-r .panel h5 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: var(--mut);
+      }
+      .cover h1 {
+        font-size: 54px;
+        line-height: 1.05;
+        margin: 0 0 18px;
+        letter-spacing: -1px;
+      }
+      .cover .kick {
+        color: var(--or2);
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        font-size: 14px;
+        margin-top: 70px;
+      }
+      .cover .sub {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.85);
+        max-width: 700px;
+        line-height: 1.45;
+      }
+      .cover .meta {
+        position: absolute;
+        left: 64px;
+        bottom: 70px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+      }
+      .big-stat {
+        font-size: 40px;
+        font-weight: 800;
+        color: var(--or);
+      }
+      /* toolbar */
+      #bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 58px;
+        background: #0d0838;
+        border-top: 1px solid #231c5c;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        z-index: 20;
+        transition: transform 0.25s;
+      }
+      body.fs #bar {
+        transform: translateY(100%);
+      }
+      body.fs.showbar #bar {
+        transform: none;
+      }
+      #bar button {
+        background: #1c1556;
+        color: #ecebff;
+        border: 1px solid #342c7a;
+        border-radius: 7px;
+        height: 36px;
+        padding: 0 13px;
+        font:
+          600 13.5px "Inter",
+          Segoe UI,
+          Arial;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      #bar button:hover {
+        background: #251d6b;
+      }
+      #bar button.pri {
+        background: var(--or);
+        border-color: var(--or);
+        color: #fff;
+      }
+      #bar button.pri:hover {
+        background: #e64a08;
+      }
+      #bar button.on {
+        background: var(--pu);
+        border-color: var(--pu);
+      }
+      #bar .sp {
+        flex: 1;
+      }
+      #bar .cnt {
+        color: #c4c2ec;
+        font-size: 13.5px;
+        min-width: 86px;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      #bar .ttl {
+        color: #9c99d6;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 36vw;
+      }
+      #bar .edonly {
+        display: none;
+      }
+      body.editing #bar .edonly {
+        display: flex;
+      }
+      #prog {
+        position: fixed;
+        left: 0;
+        bottom: 58px;
+        height: 3px;
+        background: var(--or);
+        z-index: 21;
+        transition: width 0.2s;
+      }
+      body.fs #prog {
+        bottom: 0;
+      }
+      /* edición */
+      body.editing .slide [contenteditable="true"] {
+        outline: 2px dashed rgba(85, 85, 249, 0.4);
+        outline-offset: 4px;
+        cursor: text;
+      }
+      body.editing .slide [contenteditable="true"]:focus {
+        outline: 2px solid var(--pu);
+      }
+      body.editing figure.shot img {
+        cursor: pointer;
+      }
+      #edhint {
+        display: none;
+        pointer-events: none;
+        position: fixed;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--pu);
+        color: #fff;
+        font-size: 13px;
+        padding: 7px 14px;
+        border-radius: 18px;
+        z-index: 30;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      }
+      body.editing #edhint {
+        display: block;
+        animation: hint 6s forwards;
+      }
+      @keyframes hint {
+        0%,
+        80% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      /* índice */
+      #toc {
+        position: fixed;
+        top: 0;
+        bottom: 58px;
+        left: 0;
+        width: 380px;
+        background: #fff;
+        z-index: 25;
+        transform: translateX(-100%);
+        transition: transform 0.25s;
+        overflow: auto;
+        box-shadow: 6px 0 30px rgba(0, 0, 0, 0.35);
+      }
+      #toc.open {
+        transform: none;
+      }
+      #toc h3 {
+        margin: 0;
+        padding: 18px 20px;
+        background: var(--teal-d);
+        color: #fff;
+        font-size: 16px;
+        position: sticky;
+        top: 0;
+      }
+      #toc a {
+        display: block;
+        padding: 7px 20px;
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 14px;
+        border-left: 3px solid transparent;
+      }
+      #toc a.s {
+        font-weight: 700;
+        color: var(--teal-d);
+        margin-top: 6px;
+      }
+      #toc a:not(.s) {
+        padding-left: 34px;
+        color: #4a4670;
+        font-size: 13px;
+      }
+      #toc a:hover {
+        background: #fff2ec;
+        border-left-color: var(--or);
+      }
+      #toc a.cur {
+        background: #ffefe7;
+        border-left-color: var(--or);
+      }
+      #lb {
+        position: fixed;
+        inset: 0;
+        background: rgba(7, 3, 31, 0.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 40;
+        cursor: zoom-out;
+      }
+      #lb.open {
+        display: flex;
+      }
+      #lb img {
+        max-width: 94vw;
+        max-height: 92vh;
+        background: #fff;
+        border-radius: 6px;
+      }
+      #toast {
+        position: fixed;
+        bottom: 74px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0f7b4a;
+        color: #fff;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        display: none;
+        z-index: 50;
+      }
+      @media print {
+        @page {
+          size: 1280px 720px;
+          margin: 0;
+        }
+        html,
+        body {
+          background: #fff;
+        }
+        #bar,
+        #toc,
+        #lb,
+        #prog,
+        #edhint,
+        #toast {
+          display: none !important;
+        }
+        #stage {
+          position: static;
+          display: block;
+        }
+        #deck {
+          transform: none !important;
+          width: 1280px;
+          height: auto;
+        }
+        .slide {
+          display: block !important;
+          position: relative;
+          width: 1280px;
+          height: 720px;
+          page-break-after: always;
+          break-after: page;
+          box-shadow: none;
+          border-radius: 0;
+        }
+        * {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    </style>
+  </head>
+  <body class="">
+    <div id="stage">
+      <div id="deck">
+        <section
+          class="slide cover"
+          data-title="Portada"
+          data-module="0"
+          data-key="1"
+        >
+          <div class="sec-l ed" style="width: 900px">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="kick">
+              Cloudera Professional Services · Entrenamiento
+            </div>
+            <h1>
+              Ingesta de datos con<br />Cloudera DataFlow
+              <span style="color: var(--or)">(Apache NiFi)</span>
+            </h1>
+            <p class="sub">
+              Continuación del laboratorio: controller services, records,
+              monitoreo, seguridad e integración con Kafka y HDFS.
+            </p>
+          </div>
+          <div class="meta ed">
+            Preparado para <b>Industrias Peñoles</b> · Beneficio y Analítica de
+            Datos
+          </div>
+          <div class="sec-r" style="top: 150px; width: 420px">
+            <div class="panel">
+              <h5>El laboratorio en cifras</h5>
+              <div class="grid2">
+                <div>
+                  <div class="big-stat">9</div>
+                  <div style="font-size: 13px; color: var(--mut)">módulos</div>
+                </div>
+                <div>
+                  <div class="big-stat">8</div>
+                  <div style="font-size: 13px; color: var(--mut)">
+                    laboratorios hands-on
+                  </div>
+                </div>
+                <div>
+                  <div class="big-stat">1</div>
+                  <div style="font-size: 13px; color: var(--mut)">
+                    demo guiada
+                  </div>
+                </div>
+                <div>
+                  <div class="big-stat">4</div>
+                  <div style="font-size: 13px; color: var(--mut)">
+                    bloques temáticos
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">1 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Acerca de este laboratorio"
+          data-module="0"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed"><h2>Acerca de este laboratorio</h2></header>
+          <div class="body ed">
+            <div class="grid3" style="margin-bottom: 18px">
+              <div class="card">
+                <div class="ico">1</div>
+                <h4>Objetivo</h4>
+                <p>
+                  Diseñar, construir, operar y desplegar dataflows de ingesta
+                  con Apache NiFi sobre Cloudera DataFlow (CDF), aplicando
+                  buenas prácticas de organización, trazabilidad y seguridad.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico t">2</div>
+                <h4>Audiencia</h4>
+                <p>
+                  Data Engineers, equipos de soporte de plataforma y de activos
+                  de datos. Este set continúa el material previo de fundamentos,
+                  construcción de flujos, parameters y Expression Language.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico p">3</div>
+                <h4>Formato</h4>
+                <p>
+                  Cada módulo tiene una diapositiva de objetivo y diagrama, y
+                  luego el paso a paso del laboratorio con las capturas de la
+                  herramienta.
+                </p>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="card">
+                <h4>Convenciones</h4>
+                <p>
+                  Los nombres de la herramienta se mantienen en inglés, tal como
+                  aparecen en la interfaz: <code>Processor</code>,
+                  <code>FlowFile</code>, <code>Relationship</code>, pestañas
+                  <code>SETTINGS</code>, <code>SCHEDULING</code>,
+                  <code>PROPERTIES</code>, botones <code>ADD</code>,
+                  <code>APPLY</code>, etc. Las explicaciones están en español.
+                </p>
+              </div>
+              <div class="card">
+                <h4>Material de apoyo</h4>
+                <p>
+                  Las soluciones de los laboratorios guiados están en el archivo
+                  de flow definitions
+                  <a
+                    href="https://dops-242.s3.us-east-2.amazonaws.com/guide/using-exercise-environment/images/NiFi_Flow_Solutions.json"
+                    style="color: var(--or)"
+                    >NiFi_Flow_Solutions.json</a
+                  >.
+                </p>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">2 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Agenda del laboratorio"
+          data-module="0"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed"><h2>Agenda del laboratorio</h2></header>
+          <div class="body ed">
+            <div class="grid4" style="grid-template-columns: repeat(2, 1fr)">
+              <div class="card" style="border-top: 4px solid var(--teal)">
+                <h4>Bloque 1 · Controller Services</h4>
+                <ul
+                  class="bul"
+                  style="font-size: 13.5px; list-style: none; padding: 0"
+                >
+                  <li><b>01</b> Controller Services (Hive)</li>
+                </ul>
+              </div>
+              <div class="card" style="border-top: 4px solid var(--pu)">
+                <h4>Bloque 2 · Procesamiento con records</h4>
+                <ul
+                  class="bul"
+                  style="font-size: 13.5px; list-style: none; padding: 0"
+                >
+                  <li><b>02</b> Record-based Components</li>
+                  <li><b>03</b> QueryRecord</li>
+                  <li><b>04</b> UpdateRecord</li>
+                </ul>
+              </div>
+
+              <div class="card" style="border-top: 4px solid #8a6a00">
+                <h4>Bloque 3 · Operación, seguridad e integración</h4>
+                <ul
+                  class="bul"
+                  style="font-size: 13.5px; list-style: none; padding: 0"
+                >
+                  <li><b>05</b> Dataflow optimizado</li>
+                  <li><b>06</b> Monitoring y Reporting</li>
+                  <li><b>07</b> Security</li>
+                  <li><b>08</b> Integración Kafka + HDFS</li>
+                </ul>
+              </div>
+              <div class="card" style="border-top: 4px solid var(--or)">
+                <h4>Bloque 4 · Ejercicio integrador</h4>
+                <ul
+                  class="bul"
+                  style="font-size: 13.5px; list-style: none; padding: 0"
+                >
+                  <li><b>09</b> Operación de plata (simulada)</li>
+                  <li>
+                    Archivos periódicos · QueryRecord · Kafka · HDFS · Iceberg
+                  </li>
+                  <li>Trabajo autónomo y conciliación de resultados</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">3 / 130</span>
+          </footer>
+        </section>
+
+        <section
+          class="slide sec"
+          data-title="01. Controller Services: Hive"
+          data-module="1"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 1 · Controller Services</div>
+            <div class="num">01</div>
+            <h1>Controller Services: Hive</h1>
+            <p class="obj">
+              Aprender a configurar y habilitar un controller service con el
+              ejemplo de un pool de conexiones a Apache Hive.
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> Un ClouderaHiveConnectionPool
+              habilitado a nivel del flujo. No se usa en los ejercicios
+              siguientes.
+            </p>
+            <div class="chips">
+              <span class="chip w">Controller Service</span
+              ><span class="chip w">ClouderaHiveConnectionPool</span
+              ><span class="chip w">JDBC</span><span class="chip w">Scope</span
+              ><span class="chip w">Enable</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>Controller Service compartido</h5>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: 1fr auto 1fr;
+                  gap: 10px;
+                  align-items: center;
+                "
+              >
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <div class="proc p"><b>Processor A</b></div>
+                  <div class="proc p"><b>Processor B</b></div>
+                  <div class="proc p"><b>Processor C</b></div>
+                </div>
+                <div>
+                  <div class="arr"><span>usa</span><i></i></div>
+                </div>
+                <div>
+                  <div class="proc cs">
+                    <b>ClouderaHiveConnectionPool</b
+                    ><small>Controller Service</small>
+                  </div>
+                </div>
+              </div>
+              <p style="font-size: 13px; color: var(--mut); margin: 12px 0 0">
+                Un controller service entrega un recurso compartido (pool de
+                conexiones, reader/writer, registry) a todos los processors de
+                su scope.
+              </p>
+            </div>
+            <div class="call note">
+              <b>Nota</b>
+              <div>
+                En NiFi 2.x los componentes de Hive ya no están. El mismo
+                procedimiento aplica a DBCPConnectionPool, al Kerberos User
+                Service o al catálogo de Iceberg.
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">81 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Configurar ClouderaHiveConnectionPool"
+          data-module="1"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 01 · Controller Services (Hive)</span>
+            <h2>Configurar ClouderaHiveConnectionPool</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    Haz clic en un área vacía del canvas para que no quede nada
+                    seleccionado.
+                  </li>
+                  <li>
+                    Haz clic derecho en el canvas y selecciona
+                    <b>Controller services</b>.
+                  </li>
+                  <li>
+                    Haz clic en <b>+</b>, filtra por <code>hive</code>, elige
+                    <code>ClouderaHiveConnectionPool</code> y haz clic en
+                    <b>ADD</b>.
+                  </li>
+                  <li>
+                    Configura:
+                    <ul>
+                      <li>
+                        <b>Database Connection URL</b> =
+                        <code
+                          >jdbc:hive2://master.example.com:10004/default</code
+                        >
+                      </li>
+                      <li>
+                        <b>Hive Configuration Resources</b> =
+                        <code>/etc/hive/conf/hive-site.xml,</code>
+                        <code>/etc/hadoop/conf/core-site.xml,</code>
+                        <code>/etc/hadoop/conf/hdfs-site.xml</code>
+                        , los archivos de configuración de Hive y Hadoop del
+                        cluster.
+                      </li>
+                      <li>
+                        <b>Kerberos User Service</b> =
+                        <code>USER Kerberos</code>
+                      </li>
+                    </ul>
+                    Haz clic en <b>APPLY</b>.
+                  </li>
+                  <li>
+                    Haz clic en el ícono de rayo, elige el scope
+                    <b>Service only</b> y haz clic en <b>Enable</b>.
+                  </li>
+                  <li>
+                    Valida los Controller Services creando un
+                    <code>SelectClouderaHiveQL</code>.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/excontrol/ex-control-operate-palette-configuration.svg"
+                    alt="Configuration"
+                  />
+                  <figcaption>Configuration</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/excontrol/ex-control-controller-services-tab.png"
+                    alt="CONTROLLER SERVICES"
+                  />
+                  <figcaption>CONTROLLER SERVICES</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/excontrol/ex-control-hive-controller-properties.png"
+                    alt="Propiedades"
+                  />
+                  <figcaption>Propiedades</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/excontrol/scopeofservice.png"
+                    alt="Scope y Enable"
+                  />
+                  <figcaption>Scope y Enable</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">82 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide sec"
+          data-title="02. Record-based Components"
+          data-module="2"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 2 · Procesamiento con records</div>
+            <div class="num">02</div>
+            <h1>Record-based Components</h1>
+            <p class="obj">
+              Convertir un archivo CSV a JSON con ConvertRecord y los controller
+              services Record Reader y Record Writer, usando un schema registry.
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> El flujo <i>Convert CSV to JSON</i>,
+              importado desde un template.
+            </p>
+            <div class="chips">
+              <span class="chip w">ConvertRecord</span
+              ><span class="chip w">CSVReader</span
+              ><span class="chip w">JsonRecordSetWriter</span
+              ><span class="chip w">AvroSchemaRegistry</span
+              ><span class="chip w">schema.name</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>Record-oriented processing</h5>
+              <div class="flow sm">
+                <div class="proc p">
+                  <b>GenerateFlowFile</b><small>CSV users</small>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>UpdateAttribute</b><small>schema.name=users</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p"><b>ConvertRecord</b></div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p"><b>LogAttribute</b></div>
+                </div>
+              </div>
+              <div class="grid3" style="margin-top: 12px; gap: 8px">
+                <div class="proc cs">
+                  <b>CSVReader</b><small>Record Reader</small>
+                </div>
+                <div class="proc cs">
+                  <b>AvroSchemaRegistry</b><small>schema users</small>
+                </div>
+                <div class="proc cs">
+                  <b>JsonRecordSetWriter</b><small>Record Writer</small>
+                </div>
+              </div>
+              <p style="font-size: 13px; color: var(--mut); margin: 10px 0 0">
+                El <b>reader</b> interpreta el formato de entrada y el
+                <b>writer</b> el de salida. El processor trabaja con records,
+                sin importar el formato.
+              </p>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">83 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Importar el flujo y habilitar servicios"
+          data-module="2"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 02 · Record-based Components</span>
+            <h2>Importar el flujo y habilitar servicios</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    Descarga el template
+                    <a
+                      href="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/Convert_CSV_to_JSON.xml"
+                      >Convert_CSV_to_JSON.xml</a
+                    >
+                    y los datos
+                    <a
+                      href="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/users.txt"
+                      >users.txt</a
+                    >.
+                  </li>
+                  <li>
+                    Crea el Process Group <code>Convert CSV to JSON</code> y
+                    selecciona el símbolo al lado de <b>Name*</b> y carga el
+                    template.
+                  </li>
+                  <li>
+                    Haz clic en <b>Add</b> en el Process Group y abre el canvas.
+                    Verás los processors y controller services.
+                  </li>
+                  <li>
+                    Operate palette → engranaje → <b>Controller Services</b>.
+                    Habilítalos en este orden: <code>AvroSchemaRegistry</code>,
+                    <code>CSVReader</code>, <code>JsonRecordSetWriter</code>.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/upload%20template.png"
+                    alt="Upload template"
+                  />
+                  <figcaption>Upload template</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/allflow.png"
+                    alt="Flujo importado"
+                  />
+                  <figcaption>Flujo importado</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/Controller.png"
+                    alt="Controller Services"
+                  />
+                  <figcaption>Controller Services</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/enablecontroller.png"
+                    alt="Servicios habilitados"
+                  />
+                  <figcaption>Servicios habilitados</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">84 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Generar el CSV y agregar el schema"
+          data-module="2"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 02 · Record-based Components</span>
+            <h2>Generar el CSV y agregar el schema</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="5" style="counter-reset: st 4">
+                  <li>
+                    Configura <code>GenerateFlowFile</code>:
+                    <b>Run Schedule</b> = <code>30 min</code> y el contenido de
+                    <code>users.txt</code> en <b>Custom Text</b>.
+                  </li>
+                  <li>
+                    Inicia el processor y revisa la cola (<b>List queue</b> →
+                    ojo): el contenido es CSV.
+                  </li>
+                  <li>
+                    Inicia <code>UpdateAttribute</code> (<i
+                      >Add Schema Name Attribute</i
+                    >), que agrega <code>schema.name</code> =
+                    <code>users</code>.
+                  </li>
+                  <li>Verifica el attribute en la cola siguiente.</li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/generateflowfile.png"
+                    alt="Custom Text"
+                  />
+                  <figcaption>Custom Text</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/text_csv.png"
+                    alt="Contenido CSV"
+                  />
+                  <figcaption>Contenido CSV</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/UpdateAttribute%20Processor.png"
+                    alt="schema.name"
+                  />
+                  <figcaption>schema.name</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/schema-name.png"
+                    alt="Attribute agregado"
+                  />
+                  <figcaption>Attribute agregado</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">85 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Revisar la configuración de records"
+          data-module="2"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 02 · Record-based Components</span>
+            <h2>Revisar la configuración de records</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="9" style="counter-reset: st 8">
+                  <li>
+                    <code>ConvertRecord</code>: <b>Record Reader</b> =
+                    <code>CSVReader</code> y <b>Record Writer</b> =
+                    <code>JsonRecordSetWriter</code>.
+                  </li>
+                  <li>
+                    <code>CSVReader</code>: <b>Schema Access Strategy</b> =
+                    <i>Use 'Schema Name' Property</i> y <b>Schema Registry</b> =
+                    <code>AvroSchemaRegistry</code>.
+                  </li>
+                  <li>
+                    <code>AvroSchemaRegistry</code>: contiene el schema
+                    <code>users</code> (nombres y tipos de los campos).
+                  </li>
+                  <li>
+                    <code>JsonRecordSetWriter</code>:
+                    <b>Schema Write Strategy</b> =
+                    <i>Set 'schema.name' Attribute</i>,
+                    <b>Schema Access Strategy</b> =
+                    <i>Use 'Schema Name' Property</i> y el mismo registry.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/convertRecord.png"
+                    alt="ConvertRecord"
+                  />
+                  <figcaption>ConvertRecord</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/csvreader.png"
+                    alt="CSVReader"
+                  />
+                  <figcaption>CSVReader</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/avroschema.png"
+                    alt="AvroSchemaRegistry"
+                  />
+                  <figcaption>AvroSchemaRegistry</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/jsonrecordsetwriter.png"
+                    alt="JsonRecordSetWriter"
+                  />
+                  <figcaption>JsonRecordSetWriter</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">86 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Ejecutar y ver el JSON"
+          data-module="2"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 02 · Record-based Components</span>
+            <h2>Ejecutar y ver el JSON</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="13" style="counter-reset: st 12">
+                  <li>
+                    Clic derecho en el canvas → <b>Start</b> para iniciar todo.
+                  </li>
+                  <li>
+                    Revisa la cola entre ConvertRecord y LogAttribute (<b
+                      >List queue</b
+                    >
+                    → ojo): el contenido ya está en <b>JSON</b>.
+                  </li>
+                </ol>
+                <div class="card" style="margin-top: 14px">
+                  <h4>¿Por qué records?</h4>
+                  <p>
+                    Un FlowFile con miles de filas se procesa como un conjunto
+                    de records, sin dividirlo en miles de FlowFiles. Esto rinde
+                    mucho más y permite cambiar de formato (CSV, JSON, Avro,
+                    Parquet) solo cambiando el reader o el writer.
+                  </p>
+                </div>
+              </div>
+              <div class="shots g2">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/startallflow.png"
+                    alt="Start"
+                  />
+                  <figcaption>Start</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/finalJSON.png"
+                    alt="Resultado en JSON"
+                  />
+                  <figcaption>Resultado en JSON</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">87 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide sec"
+          data-title="03. Leer y escribir records: QueryRecord"
+          data-module="3"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 2 · Procesamiento con records</div>
+            <div class="num">03</div>
+            <h1>Leer y escribir records: QueryRecord</h1>
+            <p class="obj">
+              Convertir un CSV a JSON y, en el mismo paso, filtrar los datos con
+              SQL usando QueryRecord.
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> Un flujo que separa los usuarios por
+              género en dos relationships.
+            </p>
+            <div class="chips">
+              <span class="chip w">QueryRecord</span
+              ><span class="chip w">SQL</span
+              ><span class="chip w">FLOWFILE</span
+              ><span class="chip w">CSVReader</span
+              ><span class="chip w">JsonRecordSetWriter</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>Consultas SQL sobre el flujo</h5>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: auto 1fr;
+                  gap: 10px 8px;
+                  align-items: center;
+                "
+              >
+                <div>
+                  <div class="proc p">
+                    <b>QueryRecord</b><small>CSV → JSON + SQL</small>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                  <div class="flow sm">
+                    <div class="arr"><span>female</span><i></i></div>
+                    <div class="proc p">
+                      <b>UpdateAttribute</b><small>6 registros</small>
+                    </div>
+                  </div>
+                  <div class="flow sm">
+                    <div class="arr"><span>male</span><i></i></div>
+                    <div class="proc p">
+                      <b>UpdateAttribute</b><small>4 registros</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <pre class="code">
+SELECT *
+FROM FLOWFILE
+WHERE gender = 'F'</pre
+              >
+              <p style="font-size: 13px; color: var(--mut); margin: 6px 0 0">
+                Cada FlowFile se consulta como si fuera una tabla llamada
+                <b>FLOWFILE</b>, y cada propiedad es una relationship.
+              </p>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">88 / 130</span>
+          </footer>
+        </section>
+        <section class="slide" data-title="Importar y preparar" data-module="3">
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 03 · QueryRecord</span>
+            <h2>Importar y preparar</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    Trabajeremos con el flujo <code>QueryRecord Processor</code>
+                  </li>
+                  <li>
+                    Operate palette → engranaje → <b>Controller Services</b>:
+                    habilita <code>AvroSchemaRegistry</code> y luego
+                    <code>CSVReader</code> y <code>JSONRecordSetWriter</code>.
+                  </li>
+                  <li>
+                    En <code>GenerateFlowFile</code>, agrega el CSV en
+                    <b>Custom Text</b> y ajusta <b>Run Schedule</b> =
+                    <code>30 min</code>.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query6.png"
+                    alt="Template importado"
+                  />
+                  <figcaption>Template importado</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query8.png"
+                    alt="Flujo"
+                  />
+                  <figcaption>Flujo</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query11.png"
+                    alt="Servicios habilitados"
+                  />
+                  <figcaption>Servicios habilitados</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query12.png"
+                    alt="Custom Text"
+                  />
+                  <figcaption>Custom Text</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">89 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Revisar los datos y la configuración"
+          data-module="3"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 03 · QueryRecord</span>
+            <h2>Revisar los datos y la configuración</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="5" style="counter-reset: st 4">
+                  <li>
+                    Inicia <code>GenerateFlowFile</code> y revisa la cola: hay
+                    <b>10 usuarios</b>. Detén el processor y vacía la cola.
+                  </li>
+                  <li>
+                    <code>UpdateAttribute</code> agrega
+                    <code>schema.name</code> = <code>users</code>.
+                  </li>
+                  <li>
+                    <code>QueryRecord</code>: Reader <code>CSVReader</code> y
+                    Writer <code>JsonRecordSetWriter</code>. Cada propiedad es
+                    una consulta y su nombre es la relationship:
+                    <pre class="code">
+female:  SELECT * FROM FLOWFILE WHERE gender = 'F'
+male:    SELECT * FROM FLOWFILE WHERE gender = 'M'</pre
+                    >
+                  </li>
+                  <li>
+                    Revisa <code>CSVReader</code>,
+                    <code>AvroSchemaRegistry</code> y
+                    <code>JsonRecordSetWriter</code> con el ícono <b>i</b>,
+                    igual que en el módulo 02.
+                  </li>
+                </ol>
+                <div class="call tip">
+                  <b>Tip</b>
+                  <div>
+                    Usa <b>Shift + Enter</b> para escribir consultas de varias
+                    líneas en una propiedad.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query15.png"
+                    alt="10 usuarios"
+                  />
+                  <figcaption>10 usuarios</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query17.png"
+                    alt="QueryRecord"
+                  />
+                  <figcaption>QueryRecord</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query18.png"
+                    alt="CSVReader"
+                  />
+                  <figcaption>CSVReader</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query19.png"
+                    alt="AvroSchemaRegistry"
+                  />
+                  <figcaption>AvroSchemaRegistry</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">90 / 130</span>
+          </footer>
+        </section>
+        <section class="slide" data-title="Ejecutar y validar" data-module="3">
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 03 · QueryRecord</span>
+            <h2>Ejecutar y validar</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="9" style="counter-reset: st 8">
+                  <li>
+                    Clic derecho en el canvas → <b>Start</b>. El FlowFile se
+                    divide en dos.
+                  </li>
+                  <li>
+                    Cola <code>male</code> → List queue → ojo:
+                    <b>4 usuarios</b> en JSON.
+                  </li>
+                  <li>
+                    Cola <code>female</code> → List queue → ojo:
+                    <b>6 usuarios</b> en JSON.
+                  </li>
+                </ol>
+                <div class="card" style="margin-top: 14px">
+                  <h4>Casos de uso</h4>
+                  <p>
+                    Filtrar, proyectar columnas, agregar datos
+                    (<code>SUM</code>, <code>COUNT</code>) y enrutar por reglas
+                    de negocio en streaming, sin llevar los datos a una base de
+                    datos intermedia.
+                  </p>
+                </div>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query22.png"
+                    alt="Flujo en ejecución"
+                  />
+                  <figcaption>Flujo en ejecución</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query23.png"
+                    alt="male: 4"
+                  />
+                  <figcaption>male: 4</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/reading-and-writing-record-data/images/query24.png"
+                    alt="female: 6"
+                  />
+                  <figcaption>female: 6</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">91 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide sec"
+          data-title="04. Enriquecer records: UpdateRecord"
+          data-module="4"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 2 · Procesamiento con records</div>
+            <div class="num">04</div>
+            <h1>Enriquecer records: UpdateRecord</h1>
+            <p class="obj">
+              Modificar y enriquecer campos de records con UpdateRecord y
+              Expression Language (<code>field.value</code>).
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> Dos casos de uso sobre un CSV de
+              alumnos: reemplazar valores y aplicar varias transformaciones a la
+              vez.
+            </p>
+            <div class="chips">
+              <span class="chip w">UpdateRecord</span
+              ><span class="chip w">field.value</span
+              ><span class="chip w">RecordPath</span
+              ><span class="chip w">CSVRecordSetWriter</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>UpdateRecord: transformar campos</h5>
+              <div class="flow sm">
+                <div class="proc p">
+                  <b>GenerateFlowFile</b><small>CSV</small>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>UpdateRecord</b
+                    ><small>CSVReader / CSVRecordSetWriter</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p"><b>LogAttribute</b></div>
+                </div>
+              </div>
+              <table class="t" style="margin-top: 12px; font-size: 13px">
+                <tbody>
+                  <tr>
+                    <th>Antes</th>
+                    <th>Después</th>
+                  </tr>
+                  <tr>
+                    <td><code>1,john,1234,Male,yes</code></td>
+                    <td><code>1,JOHN,1234,M,Good</code></td>
+                  </tr>
+                  <tr>
+                    <td><code>3,lisa,12,Female,yes</code></td>
+                    <td><code>3,LISA,12,F,Good</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">92 / 130</span>
+          </footer>
+        </section>
+        <section class="slide" data-title="Preparar el flujo" data-module="4">
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 04 · UpdateRecord</span>
+            <h2>Preparar el flujo</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    Descarga el template
+                    <a
+                      href="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/Update_Record_Processor.xml"
+                      >Update_Record_Processor.xml</a
+                    >.
+                  </li>
+                  <li>
+                    Crea el Process Group <code>Update_Record_processor</code>,
+                    entra, sube el template y arrástralo al canvas.
+                  </li>
+                  <li>
+                    En <code>GenerateFlowFile</code>: <b>Run Schedule</b> =
+                    <code>30 min</code> y en <b>Custom Text</b>:
+                    <pre class="code">
+id,name,mobile,gender,assignment_submission_status
+1,john,1234,Male,yes
+2,smith,234,Male,no
+3,lisa,12,Female,yes
+4,andy,13,Male,yes</pre
+                    >
+                  </li>
+                  <li>
+                    En <code>UpdateRecord</code>, elimina <code>/gender</code> y
+                    <code>/name</code> y deja solo
+                    <code>assignment_submission_status</code>.
+                  </li>
+                  <li>
+                    Con la flecha junto a Record Reader, habilita
+                    <code>CSVReader</code> y <code>CSVRecordSetWriter</code>.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/flow6.png"
+                    alt="Flujo importado"
+                  />
+                  <figcaption>Flujo importado</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/updaterecord7.png"
+                    alt="UpdateRecord"
+                  />
+                  <figcaption>UpdateRecord</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/controller.png"
+                    alt="Controller services"
+                  />
+                  <figcaption>Controller services</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">93 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Caso 1: reemplazar valores"
+          data-module="4"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 04 · UpdateRecord</span>
+            <h2>Caso 1: reemplazar valores</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="6" style="counter-reset: st 5">
+                  <li>
+                    La propiedad de <code>UpdateRecord</code> es:
+                    <pre class="code">
+assignment_submission_status = ${field.value:replace('yes','Good')}</pre
+                    >
+                  </li>
+                  <li>Clic derecho en el canvas → <b>Start</b>.</li>
+                  <li>
+                    Cola entre UpdateRecord y LogAttribute → <b>List Queue</b> →
+                    ojo: los <i>yes</i> ahora dicen <b>Good</b>.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g2">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/update10.png"
+                    alt="Propiedad"
+                  />
+                  <figcaption>Propiedad</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/output14.png"
+                    alt="Resultado caso 1"
+                  />
+                  <figcaption>Resultado caso 1</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">94 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Caso 2: varias transformaciones"
+          data-module="4"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 04 · UpdateRecord</span>
+            <h2>Caso 2: varias transformaciones</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="9" style="counter-reset: st 8">
+                  <li>
+                    Clic derecho en el canvas → <b>Stop</b> y luego
+                    <b>Empty all queues</b>.
+                  </li>
+                  <li>
+                    En <code>UpdateRecord</code>, agrega con <b>+</b>:
+                    <pre class="code">
+/gender = ${field.value:substring(0,1)}
+/name   = ${field.value:toUpper()}</pre
+                    >
+                    Male → M, Female → F, y los nombres quedan en mayúsculas.
+                  </li>
+                  <li>
+                    Inicia el flujo y revisa la cola: nombres en mayúsculas y
+                    género abreviado.
+                  </li>
+                </ol>
+                <div class="call note">
+                  <b>Nota</b>
+                  <div>
+                    El nombre de la propiedad es un
+                    <b>RecordPath</b> (<code>/campo</code>) y
+                    <code>field.value</code> representa el valor actual del
+                    campo.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/empty16.png"
+                    alt="Empty all queues"
+                  />
+                  <figcaption>Empty all queues</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/property17.png"
+                    alt="Nuevas propiedades"
+                  />
+                  <figcaption>Nuevas propiedades</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/output18.png"
+                    alt="Resultado caso 2"
+                  />
+                  <figcaption>Resultado caso 2</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">95 / 130</span>
+          </footer>
+        </section>
+
+        <section
+          class="slide sec"
+          data-title="05. Construir un dataflow optimizado"
+          data-module="5"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 3 · Operación, seguridad e integración</div>
+            <div class="num">05</div>
+            <h1>Construir un dataflow optimizado</h1>
+            <p class="obj">
+              Controlar la velocidad con que los datos avanzan por el flujo,
+              nombrar los archivos según su tamaño con las reglas avanzadas de
+              UpdateAttribute y comprimirlos.
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> Un flujo con tres generadores, un
+              Funnel, ControlRate, reglas condicionales, compresión y escritura
+              en disco.
+            </p>
+            <div class="chips">
+              <span class="chip w">ControlRate</span
+              ><span class="chip w">Funnel</span
+              ><span class="chip w">UpdateAttribute Advanced</span
+              ><span class="chip w">Rules</span
+              ><span class="chip w">CompressContent</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <div class="flow sm">
+                <div class="proc p">
+                  <b>GenerateFlowFile ×3</b><small>1KB · 10KB · 100KB</small>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc fun"><b>Funnel</b></div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>ControlRate</b><small>120KB / min</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span>success</span><i></i></div>
+                  <div class="proc p">
+                    <b>UpdateAttribute</b><small>rules por tamaño</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>CompressContent</b><small>gzip</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>PutFile</b><small>/tmp/nifi/opt</small>
+                  </div>
+                </div>
+              </div>
+              <p style="font-size: 13px; color: var(--mut); margin: 12px 0 0">
+                ControlRate limita el throughput. Lo que excede el límite queda
+                en la cola anterior y no se pierde.
+              </p>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">104 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Generadores, Funnel y ControlRate"
+          data-module="5"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 05 · Dataflow optimizado</span>
+            <h2>Generadores, Funnel y ControlRate</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    Agrega tres <code>GenerateFlowFile</code>:
+                    <ul>
+                      <li>
+                        <code>Opt 1KB GenerateFlowFile</code>: Run Schedule
+                        <code>10 sec</code>, File Size <code>1KB</code>
+                      </li>
+                      <li>
+                        <code>Opt 10KB GenerateFlowFile</code>:
+                        <code>30 sec</code>, <code>10KB</code>
+                      </li>
+                      <li>
+                        <code>Opt 100KB GenerateFlowFile</code>:
+                        <code>60 sec</code>, <code>100KB</code>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    Agrega un <b>Funnel</b> y conecta los tres generadores a él
+                    (<code>success</code>).
+                  </li>
+                  <li>
+                    Agrega <code>Opt ControlRate</code> con
+                    <code>failure</code> auto-terminada,
+                    <b>Rate Control Criteria</b> = <code>data rate</code>,
+                    <b>Time Duration</b> = <code>1 min</code> y
+                    <b>Maximum Rate</b> = <code>120KB</code>.
+                  </li>
+                  <li>Conecta el Funnel → ControlRate.</li>
+                </ol>
+              </div>
+              <div class="shots g2">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-generateflowfile-processors.png"
+                    alt="Generadores + Funnel"
+                  />
+                  <figcaption>Generadores + Funnel</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-controlrate-properties.png"
+                    alt="ControlRate"
+                  />
+                  <figcaption>ControlRate</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">105 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Reglas avanzadas en UpdateAttribute"
+          data-module="5"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 05 · Dataflow optimizado</span>
+            <h2>Reglas avanzadas en UpdateAttribute</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="5" style="counter-reset: st 4">
+                  <li>
+                    Agrega <code>Opt Rules UpdateAttribute</code> y haz clic
+                    derecho en el processor y clic en <b>ADVANCED</b>, luego en
+                    <b>Create Rule</b>. En <b>FlowFile Policy</b>, elige
+                    <code>use original</code>.
+                  </li>
+                  <li>
+                    Regla <b>Size1KB</b>: condición
+                    <code>${fileSize:le(1024)}</code>. Acción:
+                    <code>filename</code> =
+                    <pre class="code">
+filesize-log-${nextInt()}.${now():format('HH:mm:ss')}-small</pre
+                    >
+                    Haz clic en <b>SAVE</b>.
+                  </li>
+                  <li>
+                    Regla <b>Size10KB</b>: cópiala de Size1KB (<i
+                      >Copy From Existing Rule</i
+                    >) con las condiciones <code>${fileSize:gt(1024)}</code> y
+                    <code>${fileSize:le(10240)}</code>. Cambia <i>small</i> por
+                    <b>medium</b>.
+                  </li>
+                  <li>
+                    Regla <b>Size100KB</b>: cópiala de Size10KB con
+                    <code>${fileSize:gt(10240)}</code> y
+                    <code>${fileSize:le(102400)}</code>. Cambia a <b>large</b>.
+                    Cierra con la X.
+                  </li>
+                  <li>
+                    Conecta ControlRate → UpdateAttribute
+                    (<code>success</code>).
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-add-rule.png"
+                    alt="Agregar regla"
+                  />
+                  <figcaption>Agregar regla</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-Size1KB-rule.png"
+                    alt="Size1KB"
+                  />
+                  <figcaption>Size1KB</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-copy-Size1KB-rule.png"
+                    alt="Copiar regla"
+                  />
+                  <figcaption>Copiar regla</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-Size100KB-rule.png"
+                    alt="Size100KB"
+                  />
+                  <figcaption>Size100KB</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">106 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Compresión, escritura y ejecución"
+          data-module="5"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 05 · Dataflow optimizado</span>
+            <h2>Compresión, escritura y ejecución</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="10" style="counter-reset: st 9">
+                  <li>
+                    Agrega <code>Opt CompressContent</code> con
+                    <code>failure</code> auto-terminada,
+                    <b>Compression Format</b> = <code>gzip</code> y
+                    <b>Update Filename</b> = <code>true</code> (agrega
+                    <code>.gz</code>). Conecta UpdateAttribute →
+                    CompressContent.
+                  </li>
+                  <li>
+                    Agrega <code>Opt PutFile</code>: <b>Directory</b> =
+                    <code>/tmp/nifi/opt</code>, <code>replace</code>,
+                    <code>true</code>, y <code>failure</code> y
+                    <code>success</code> auto-terminadas. Conecta
+                    CompressContent → PutFile.
+                  </li>
+                  <li>
+                    Inicia todo y refresca seguido. Al arrancar pasan 111KB de
+                    inmediato (100 + 10 + 1). A los ~30 s se llega a 123–124KB y
+                    los archivos siguientes <b>quedan en cola</b> antes de
+                    ControlRate.
+                  </li>
+                  <li>
+                    Observa cuándo se liberan y compara las cantidades. Luego
+                    lista la salida:
+                    <pre class="code">
+$ ls -l /tmp/nifi/opt
+$ ls -lt /tmp/nifi/opt</pre
+                    >
+                  </li>
+                  <li>Después de unos minutos, detén el flujo.</li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-compresscontent-properties.png"
+                    alt="CompressContent"
+                  />
+                  <figcaption>CompressContent</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-complete-dataflow2.png"
+                    alt="Flujo completo"
+                  />
+                  <figcaption>Flujo completo</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exoptdf/ex-opt-run-dataflow-7-files-1KB-queued.png"
+                    alt="Archivos en cola"
+                  />
+                  <figcaption>Archivos en cola</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">107 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide sec"
+          data-title="06. Monitoring y Reporting"
+          data-module="6"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 3 · Operación, seguridad e integración</div>
+            <div class="num">06</div>
+            <h1>Monitoring y Reporting</h1>
+            <p class="obj">
+              Usar las herramientas de monitoreo de NiFi: reporting tasks,
+              bulletins y status history.
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> Un reporting task
+              <i>MonitorDiskUsage</i> que genera alertas, y el análisis del
+              historial de un processor.
+            </p>
+            <div class="chips">
+              <span class="chip w">Reporting Task</span
+              ><span class="chip w">MonitorDiskUsage</span
+              ><span class="chip w">Bulletin Board</span
+              ><span class="chip w">Status History</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>Herramientas de monitoreo</h5>
+              <div class="grid3" style="gap: 8px">
+                <div class="card" style="padding: 10px">
+                  <b style="font-size: 13px">Reporting Tasks</b>
+                  <p style="font-size: 12px">
+                    Tareas programadas que revisan el sistema (disco, memoria) o
+                    envían métricas a sistemas externos.
+                  </p>
+                </div>
+                <div class="card" style="padding: 10px">
+                  <b style="font-size: 13px">Bulletins</b>
+                  <p style="font-size: 12px">
+                    Avisos y errores de los componentes, reunidos en el Bulletin
+                    Board.
+                  </p>
+                </div>
+                <div class="card" style="padding: 10px">
+                  <b style="font-size: 13px">Status History</b>
+                  <p style="font-size: 12px">
+                    Gráficos de las métricas de cada componente de las últimas
+                    24 horas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">108 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Reporting task de uso de disco"
+          data-module="6"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 06 · Monitoring y Reporting</span>
+            <h2>Reporting task de uso de disco</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    En una terminal, revisa el uso del disco raíz y anota el
+                    <code>Use%</code>:
+                    <pre class="code">$ df -h /</pre>
+                  </li>
+                  <li>
+                    En NiFi: <b>Global Menu</b> → <b>Controller Settings</b> →
+                    <b>REPORTING TASKS</b> → <b>+</b>. Elige
+                    <code>MonitorDiskUsage</code> y haz clic en <b>ADD</b>.
+                  </li>
+                  <li>
+                    Aparece un ícono de advertencia: falta
+                    <b>Directory Location</b>. Edita la tarea (lápiz):
+                    <ul>
+                      <li><b>Run schedule</b> = <code>1 min</code></li>
+                      <li>
+                        <b>Threshold</b> = <code>14%</code> (bajo a propósito,
+                        para que se dispare)
+                      </li>
+                      <li><b>Directory Location</b> = <code>/</code></li>
+                      <li><b>Directory Display Name</b> = <code>root</code></li>
+                    </ul>
+                  </li>
+                  <li>
+                    Haz clic en <b>APPLY</b> e inicia la tarea con <b>Start</b>.
+                  </li>
+                </ol>
+                <div class="call warn">
+                  <b>Importante</b>
+                  <div>
+                    Un umbral de 14 % no sirve en producción: se usa solo para
+                    provocar la alerta en el ejercicio.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g2">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exmonrep/df-h.png"
+                    alt="df -h"
+                  />
+                  <figcaption>df -h</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exmonrep/monitoringreport.png"
+                    alt="MonitorDiskUsage"
+                  />
+                  <figcaption>MonitorDiskUsage</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">109 / 130</span>
+          </footer>
+        </section>
+        <section class="slide" data-title="Bulletins" data-module="6">
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 06 · Monitoring y Reporting</span>
+            <h2>Bulletins</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="5" style="counter-reset: st 4">
+                  <li>
+                    Espera unos minutos y refresca la lista. Aparece un borde
+                    rojo junto a la tarea: el uso de disco superó el umbral.
+                    Pasa el mouse para ver el detalle, identificado como
+                    <code>root</code>.
+                  </li>
+                  <li>
+                    Detén la tarea con <b>Stop</b> y cierra NiFi Settings.
+                  </li>
+                  <li>
+                    Abre <b>Global Menu</b> → <b>Bulletin Board</b>: aparecen
+                    las mismas advertencias. Ciérralo con la X.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g1">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exmonrep/diskusage1.png"
+                    alt="Alerta de disco"
+                  />
+                  <figcaption>Alerta de disco</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">110 / 130</span>
+          </footer>
+        </section>
+        <section class="slide" data-title="Status History" data-module="6">
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 06 · Monitoring y Reporting</span>
+            <h2>Status History</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="8" style="counter-reset: st 7">
+                  <li>
+                    Clic derecho en un processor de un flujo que hayas ejecutado
+                    → <b>View Status History</b>.
+                  </li>
+                  <li>
+                    Se ve un gráfico de la métrica seleccionada (por defecto,
+                    <i>FlowFiles Out</i>). Dibuja un rectángulo en el gráfico
+                    inferior para hacer zoom en el superior.
+                  </li>
+                  <li>
+                    Cambia de métrica con el selector que está arriba del
+                    gráfico.
+                  </li>
+                  <li>Cierra la ventana.</li>
+                </ol>
+                <div class="call note">
+                  <b>Nota</b>
+                  <div>
+                    NiFi guarda estadísticas por 24 horas. Si el flujo lleva más
+                    tiempo sin ejecutarse, córrelo de nuevo y espera unos
+                    minutos.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g2">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exmonrep/status-history-zoom.svg"
+                    alt="Zoom"
+                  />
+                  <figcaption>Zoom</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/exmonrep/metric-selection.svg"
+                    alt="Selección de métrica"
+                  />
+                  <figcaption>Selección de métrica</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">111 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide sec"
+          data-title="07. Demo: Security con Ranger"
+          data-module="7"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 3 · Operación, seguridad e integración</div>
+            <div class="num">07</div>
+            <h1>Demo: Security con Ranger</h1>
+            <p class="obj">
+              Crear una política de acceso personalizada en Ranger para que un
+              usuario o grupo acceda a un componente de NiFi o de NiFi Registry
+              cuando no la hereda.
+            </p>
+            <div class="chips">
+              <span class="chip w">Ranger</span
+              ><span class="chip w">Access Policy</span
+              ><span class="chip w">Resource Identifier</span
+              ><span class="chip w">NiFi group</span
+              ><span class="chip w">KeyCloak</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>Autorización con Ranger</h5>
+              <div class="flow sm">
+                <div class="proc ext">
+                  <b>Usuario / Grupo</b><small>KeyCloak · LDAP</small>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc cs">
+                    <b>Política Ranger</b><small>descriptor/ID</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>Process Group</b><small>Solution-Integration Hdfs</small>
+                  </div>
+                </div>
+              </div>
+              <table class="t" style="margin-top: 12px; font-size: 13px">
+                <tbody>
+                  <tr>
+                    <th>Tipo de política</th>
+                    <th>Qué otorga</th>
+                  </tr>
+                  <tr>
+                    <td>Heredada</td>
+                    <td>El acceso viene del componente padre.</td>
+                  </tr>
+                  <tr>
+                    <td>Personalizada (component)</td>
+                    <td>Ver o modificar un componente específico.</td>
+                  </tr>
+                  <tr>
+                    <td>Data access</td>
+                    <td>
+                      Ver o modificar los datos. Se debe incluir también el
+                      grupo <b>NiFi</b> (nodos).
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="call pen">
+              <b>Aplicación Peñoles</b>
+              <div>
+                Este tema se trabaja en detalle en el Track 1 (Administración y
+                gobierno con SDX).
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">112 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Conceptos de la política personalizada"
+          data-module="7"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 07 · Security</span>
+            <h2>Conceptos de la política personalizada</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols" style="grid-template-columns: 1.1fr 1fr">
+              <div class="txt">
+                <ul class="bul">
+                  <li>
+                    Un usuario puede necesitar acceso a un recurso específico:
+                    un <b>process group</b> de NiFi o un <b>bucket</b> de NiFi
+                    Registry.
+                  </li>
+                  <li>
+                    Si no lo obtiene por <b>herencia</b>, se crea una
+                    <b>política personalizada</b> para ese componente y se
+                    agrega el usuario o su grupo.
+                  </li>
+                  <li>
+                    Cada política da acceso a <b>un</b> componente, identificado
+                    por su <b>ID</b>.
+                  </li>
+                  <li>
+                    Para <b>ver o modificar datos</b> se crea una política de
+                    data access que incluya al usuario <b>y al grupo NiFi</b>.
+                  </li>
+                </ul>
+                <div class="call note">
+                  <b>Nota</b>
+                  <div>
+                    El <b>grupo NiFi</b> se administra de forma dinámica, existe
+                    en todos los hosts de Flow Management y contiene las
+                    identidades de los nodos NiFi y Knox. Al agregarlo a la
+                    política de datos, los nodos pueden acceder a los datos en
+                    nombre del usuario.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g1">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/security/images/Read%20access.png"
+                    alt="Usuario con acceso de solo lectura"
+                  />
+                  <figcaption>Usuario con acceso de solo lectura</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">113 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Crear la política en Ranger"
+          data-module="7"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 07 · Security</span>
+            <h2>Crear la política en Ranger</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    El instructor abre dos navegadores: uno con una cuenta de
+                    usuario adicional (KeyCloak → NiFi) y otro con su cuenta de
+                    administrador para Ranger.
+                  </li>
+                  <li>
+                    Con la cuenta de usuario hay acceso de lectura al canvas
+                    raíz. Dentro de <code>Solution-Intergration Hdfs</code> solo
+                    se puede leer la barra de componentes.
+                  </li>
+                  <li>
+                    Selecciona el process group: su <b>ID</b> aparece en la
+                    Operate palette. Cópialo.
+                  </li>
+                  <li>
+                    En Ranger, abre el servicio
+                    <code>primary_nifi_cluster_nifi_NIFI_BASE</code> y haz clic
+                    en <b>Add New Policy</b>.
+                  </li>
+                  <li>
+                    Ingresa un nombre único, un <i>Policy Label</i> (opcional) y
+                    el recurso en <b>NiFi Resource Identifier</b> con el formato
+                    <code>(descriptor)/(ID)</code>.
+                  </li>
+                  <li>
+                    Agrega el usuario o grupo, elige el nivel de permiso y haz
+                    clic en <b>Add</b>.
+                  </li>
+                </ol>
+                <div class="call tip">
+                  <b>Tip</b>
+                  <div>
+                    Resultado: el usuario o grupo ya puede acceder al componente
+                    indicado en la política.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/security/images/PG_ID.png"
+                    alt="ID del process group"
+                  />
+                  <figcaption>ID del process group</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/security/images/ranger3.png"
+                    alt="Servicio NiFi en Ranger"
+                  />
+                  <figcaption>Servicio NiFi en Ranger</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/security/images/Add%20PGID.png"
+                    alt="Nueva política"
+                  />
+                  <figcaption>Nueva política</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/security/images/Security%20output.png"
+                    alt="Acceso concedido"
+                  />
+                  <figcaption>Acceso concedido</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">114 / 130</span>
+          </footer>
+        </section>
+
+        <section
+          class="slide sec"
+          data-title="08. Integración: Kafka y HDFS"
+          data-module="8"
+          data-section="1"
+        >
+          <div class="sec-l ed">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="blq">Bloque 3 · Operación, seguridad e integración</div>
+            <div class="num">08</div>
+            <h1>Integración: Kafka y HDFS</h1>
+            <p class="obj">
+              Integrar NiFi con Apache Kafka y HDFS: leer un JSON, publicarlo en
+              un topic, consumirlo y guardarlo en HDFS.
+            </p>
+            <p class="build">
+              <b>Lo que construirás:</b> Un pipeline JSON → Kafka → HDFS con
+              record readers y writers.
+            </p>
+            <div class="chips">
+              <span class="chip w">PublishKafkaRecord_2_6</span
+              ><span class="chip w">ConsumeKafka_2_6</span
+              ><span class="chip w">PutHDFS</span
+              ><span class="chip w">JsonTreeReader</span
+              ><span class="chip w">Schema inference</span>
+            </div>
+          </div>
+          <div class="sec-r ed">
+            <div class="panel">
+              <h5>Parte 1: publicar en Kafka</h5>
+              <div class="flow sm">
+                <div class="proc p"><b>ListFile</b></div>
+                <div class="seg">
+                  <div class="arr"><span>success</span><i></i></div>
+                  <div class="proc p">
+                    <b>FetchFile</b><small>mydata.json</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span>success</span><i></i></div>
+                  <div class="proc p">
+                    <b>PublishKafkaRecord_2_6</b><small>topic nifidata</small>
+                  </div>
+                </div>
+              </div>
+              <h5 style="margin-top: 14px">
+                Parte 2: consumir y guardar en HDFS
+              </h5>
+              <div class="flow sm">
+                <div class="proc ext"><b>Kafka</b><small>nifidata</small></div>
+                <div class="seg">
+                  <div class="arr"><span></span><i></i></div>
+                  <div class="proc p">
+                    <b>ConsumeKafka_2_6</b><small>Group ID 0001</small>
+                  </div>
+                </div>
+                <div class="seg">
+                  <div class="arr"><span>success</span><i></i></div>
+                  <div class="proc p">
+                    <b>PutHDFS</b><small>/tmp/nifidata</small>
+                  </div>
+                </div>
+              </div>
+              <div class="grid2" style="margin-top: 12px; gap: 8px">
+                <div class="proc cs">
+                  <b>JsonTreeReader</b><small>Record Reader</small>
+                </div>
+                <div class="proc cs">
+                  <b>JsonRecordSetWriter</b><small>Record Writer</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">119 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Leer el archivo y crear el topic"
+          data-module="8"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 08 · Integración Kafka + HDFS</span>
+            <h2>Leer el archivo y crear el topic</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="1" style="counter-reset: st 0">
+                  <li>
+                    Agrega <code>Integrate ListFile</code> con
+                    <b>Input Directory</b> =
+                    <code
+                      >/home/training/training_materials/nifi/data/integrate</code
+                    >.
+                  </li>
+                  <li>
+                    Agrega <code>Integrate FetchFile</code> con
+                    <code>failure</code>, <code>not.found</code> y
+                    <code>permission.denied</code> auto-terminadas. Conecta
+                    ListFile → FetchFile (<code>success</code>).
+                  </li>
+                  <li>
+                    Revisa el archivo de ejemplo:
+                    <pre class="code">
+$ cat ~/training_materials/nifi/data/integrate/mydata.json
+[{"id":1,"name":"Jobin","title":"consultant"},
+ {"id":2,"name":"Sam","title":"developer"},
+ {"id":3,"name":"Mary","title":"software engineer"}]</pre
+                    >
+                  </li>
+                  <li>
+                    Crea el topic (ejemplo):
+                    <pre class="code">
+$ export KAFKA_OPTS="-Djava.security.auth.login.config=/root/kafka_connect/kafka.jaas.conf"
+
+$ export BOOTSTRAP_SERVERS="broker1:9093,broker2:9093,broker3:9093"
+
+$ kafka-topics --bootstrap-server "$BOOTSTRAP_SERVERS" --command-config /root/kafka_connect/kafka.properties --create --topic nifidata --partitions 3 --replication-factor 3</pre
+                    >
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g2">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/listfile.png"
+                    alt="ListFile"
+                  />
+                  <figcaption>ListFile</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/relationship.png"
+                    alt="FetchFile"
+                  />
+                  <figcaption>FetchFile</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">120 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Configurar PublishKafkaRecord_2_6"
+          data-module="8"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 08 · Integración Kafka + HDFS</span>
+            <h2>Configurar PublishKafkaRecord_2_6</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="5" style="counter-reset: st 4">
+                  <li>
+                    Agrega <code>Integrate PublishKafkaRecord_2_6</code> con
+                    <code>failure</code> y <code>success</code> auto-terminadas.
+                  </li>
+                  <li>
+                    Propiedades: <b>Kafka Brokers</b> =
+                    <code>broker1.example.com:9093,</code>
+                    <code>broker2.example.com:9093,</code>
+                    <code>broker3.example.com:9093</code>
+                    <b>Topic Name</b> = <code>nifidata</code> y
+                    <b>Use Transactions</b> = <code>false</code>.
+                  </li>
+                  <li>
+                    <b>Record Reader</b> → <b>Create new service</b> →
+                    <code>JsonTreeReader</code> → <b>CREATE</b>. Con la flecha,
+                    entra al servicio: por defecto
+                    <b>infiere el schema</b> desde los datos. Habilítalo con el
+                    scope <b>Service only</b>.
+                  </li>
+                  <li>
+                    <b>Record Writer</b> → <b>Create new service</b> →
+                    <code>JsonRecordSetWriter</code>. Habilítalo con el scope
+                    <b>Service only</b>.
+                  </li>
+                  <li>
+                    Verifica <b>Delivery Guarantee</b> =
+                    <code>Best Effort</code>, <b>Security Protocol</b> =
+                    <code>SASL_SSL</code>, <b>SASL Mechanism</b> =
+                    <code>GSSAPI</code> y <b>Kerberos Service Name</b> =
+                    <code>kafka</code>.
+                  </li>
+                  <li>
+                    Configura los siguiente Controller Services como indique el
+                    instructor <b>Kerberos User Service</b> y
+                    <b>SSL Context Service</b>.
+                  </li>
+                  <li>
+                    Conecta FetchFile → PublishKafkaRecord_2_6
+                    (<code>success</code>).
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/jsontree.png"
+                    alt="JsonTreeReader"
+                  />
+                  <figcaption>JsonTreeReader</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/inferschema.png"
+                    alt="Schema inferido"
+                  />
+                  <figcaption>Schema inferido</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/properties.png"
+                    alt="Propiedades"
+                  />
+                  <figcaption>Propiedades</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/finalflow.png"
+                    alt="Flujo de publicación"
+                  />
+                  <figcaption>Flujo de publicación</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">121 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Publicar y verificar en Kafka"
+          data-module="8"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 08 · Integración Kafka + HDFS</span>
+            <h2>Publicar y verificar en Kafka</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="10" style="counter-reset: st 9">
+                  <li>
+                    En una terminal, deja escuchando un consumidor:
+                    <pre class="code">
+$ kafka-console-consumer \
+  --bootstrap-server "$BOOTSTRAP_SERVERS" \
+  --topic nifidata \
+  --group penoles_lab \
+  --from-beginning \
+  --consumer.config /root/kafka_connect/kafka.properties</pre
+                    >
+                  </li>
+                  <li>
+                    Limpia el estado de ListFile e inicia ListFile, FetchFile y
+                    Publish.
+                  </li>
+                  <li>
+                    En la terminal aparecen los mensajes:
+                    <pre class="code">
+{"id":1,"name":"Jobin","title":"consultant"}
+{"id":2,"name":"Sam","title":"developer"}
+{"id":3,"name":"Mary","title":"software engineer"}</pre
+                    >
+                  </li>
+                  <li>
+                    Detén los processors y deja abierta la terminal del
+                    consumidor.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g1">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/controller1.png"
+                    alt="Controller services"
+                  />
+                  <figcaption>Controller services</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">122 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Consumir de Kafka y escribir en HDFS"
+          data-module="8"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 08 · Integración Kafka + HDFS</span>
+            <h2>Consumir de Kafka y escribir en HDFS</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="14" style="counter-reset: st 13">
+                  <li>
+                    Agrega <code>Integrate ConsumeKafka_2_6</code>:
+                    <b>Kafka Brokers</b> =
+                    <code>broker1.example.com:9093,</code>
+                    <code>broker2.example.com:9093,</code>
+                    <code>broker3.example.com:9093</code>
+                    <b>Topic Name</b> = <code>nifidata</code> y
+                    <b>Group ID</b> = <code>penoles_lab</code>.
+                    <b>Offset Reset</b> = <code>latest</code> lee solo los datos
+                    nuevos; con <code>earliest</code> leería todo el topic.
+                    Agrega también todas las configuraciones de TLS y Kerberos
+                    que se usaron en <code>PublishKafkaRecord_2_6</code>.
+                  </li>
+                  <li>
+                    Agrega <code>Integrate PutHDFS</code> con
+                    <code>failure</code> y <code>success</code> auto-terminadas:
+                    <ul>
+                      <li>
+                        <b>Hadoop Configuration Resources</b> =
+                        <code>/etc/hadoop/conf/core-site.xml,</code>
+                        <code>/etc/hadoop/conf/hdfs-site.xml</code>
+                      </li>
+                      <li>
+                        <b>Kerberos User Service</b> =
+                        <code>User Keytab o User Principal</code>
+                      </li>
+
+                      <li><b>Directory</b> = <code>/tmp/nifidata</code></li>
+                      <li>
+                        <b>Conflict Resolution Strategy</b> =
+                        <code>replace</code>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    Conecta ConsumeKafka_2_6 → PutHDFS (<code>success</code>).
+                  </li>
+                </ol>
+                <div class="call warn">
+                  <b>Importante</b>
+                  <div>
+                    Inicia ConsumeKafka_2_6 <b>antes</b> que Publish, para que
+                    esté listo cuando lleguen los datos. Recuerda limpiar el
+                    estado de ListFile en cada ejecución.
+                  </div>
+                </div>
+              </div>
+              <div class="shots g4">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/consumekafka.png"
+                    alt="ConsumeKafka_2_6"
+                  />
+                  <figcaption>ConsumeKafka_2_6</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/puthdfs.png"
+                    alt="PutHDFS"
+                  />
+                  <figcaption>PutHDFS</figcaption>
+                </figure>
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/integration.png"
+                    alt="Flujo completo"
+                  />
+                  <figcaption>Flujo completo</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">123 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Ejecutar el pipeline completo"
+          data-module="8"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 08 · Integración Kafka + HDFS</span>
+            <h2>Ejecutar el pipeline completo</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <ol class="steps" start="17" style="counter-reset: st 16">
+                  <li>
+                    Limpia el estado de ListFile. Inicia ConsumeKafka_2_6 y
+                    PutHDFS, y luego ListFile, FetchFile y Publish.
+                  </li>
+                  <li>En la terminal del consumidor aparecen más mensajes.</li>
+                  <li>
+                    En otra terminal, lista los archivos:
+                    <pre class="code">$ hdfs dfs -ls /tmp/nifidata</pre>
+                    Hay archivos con nombres alfanuméricos (por ejemplo
+                    <code>cf9b5835-…</code>).
+                  </li>
+                  <li>
+                    Revisa el contenido: cada archivo contiene una línea.
+                    <pre class="code">
+$ hdfs dfs -cat /tmp/nifidata/&lt;filename&gt;</pre
+                    >
+                  </li>
+                  <li>
+                    Detén los processors y cierra el consumidor con
+                    <b>Ctrl + C</b>.
+                  </li>
+                </ol>
+              </div>
+              <div class="shots g1">
+                <figure class="shot">
+                  <img
+                    src="https://dops-242.s3.us-east-2.amazonaws.com/guide/graphics/integration/runflow.png"
+                    alt="Pipeline en ejecución"
+                  />
+                  <figcaption>Pipeline en ejecución</figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">124 / 130</span>
+          </footer>
+        </section>
+
+        <section
+          class="slide"
+          data-title="Resumen del laboratorio"
+          data-module="0"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed"><h2>Resumen del laboratorio</h2></header>
+          <div class="body ed">
+            <div class="grid3">
+              <div class="card">
+                <div class="ico">1</div>
+                <h4>Construir</h4>
+                <p>
+                  Processors, connections y relationships, back pressure,
+                  attributes y Expression Language.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico t">2</div>
+                <h4>Organizar y gobernar</h4>
+                <p>
+                  Process groups, parameters, NiFi Registry, Data Provenance y
+                  políticas de Ranger.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico p">3</div>
+                <h4>Procesar a escala</h4>
+                <p>
+                  Records (ConvertRecord, QueryRecord, UpdateRecord),
+                  ControlRate e integración con Kafka y HDFS.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico" style="background: #8a6a00">4</div>
+                <h4>Integrar</h4>
+                <p>
+                  Archivos periódicos de operación de plata, clasificación con
+                  QueryRecord y entrega mediante Kafka a HDFS.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico t">5</div>
+                <h4>Operar</h4>
+                <p>
+                  Reporting tasks, bulletins, status history y seguimiento de
+                  colas y errores.
+                </p>
+              </div>
+              <div class="card">
+                <div class="ico p">6</div>
+                <h4>Buenas prácticas</h4>
+                <p>
+                  Nombres de archivo únicos, clear state, versionar todo y un
+                  parameter context por ambiente.
+                </p>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">129 / 130</span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="09. Integrador: operación de plata"
+          data-module="9"
+          data-section="1"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>09. Integrador: operación de plata</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <p class="lead">
+                  Trabajo autónomo · recepción periódica de archivos.
+                </p>
+                <h3>El reto</h3>
+                <p>
+                  Dos unidades ficticias reportan tonelaje, ley de plata y
+                  recuperación. Construye un flujo que archive el origen,
+                  detecte registros inválidos y entregue los válidos mediante
+                  Kafka a HDFS y a una tabla Iceberg.
+                </p>
+                <ul class="bul">
+                  <li>Usa ListFile, FetchFile y UpdateAttribute.</li>
+                  <li>Consulta records con SQL y conserva los rechazos.</li>
+                  <li>Publica, consume y verifica HDFS e Iceberg.</li>
+                </ul>
+                <div class="call warn">
+                  <b>Datos simulados</b>
+                  <div>
+                    Las cifras y unidades del ejercicio no representan
+                    operaciones ni resultados de Peñoles.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Tu kit de trabajo</h3>
+                <p>
+                  <a href="../Datos/plata/kit_integrador_plata.zip" download
+                    >Descargar kit completo (.zip)</a
+                  >
+                  · <a href="../Datos/plata/README.md">Guía detallada</a>
+                </p>
+                <table class="t">
+                  <tbody>
+                    <tr>
+                      <td><b>Entrada</b></td>
+                      <td>3 CSV × 24 records = <b>72</b></td>
+                    </tr>
+                    <tr>
+                      <td><b>Destino esperado</b></td>
+                      <td>66 válidos + 6 rechazados</td>
+                    </tr>
+                    <tr>
+                      <td><b>Incluye</b></td>
+                      <td>Esquema, SQL, parámetros, emisor y validador</td>
+                    </tr>
+                    <tr>
+                      <td><b>Entrega</b></td>
+                      <td>Canvas, conciliación y trazabilidad</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="call tip">
+                  <b>Construye tu solución</b>
+                  <div>
+                    Usa los módulos anteriores como referencia. El kit no
+                    contiene un flujo resuelto. La extensión Iceberg se limita a
+                    crear, cargar y consultar una tabla.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Diseña el recorrido de los datos"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Diseña el recorrido de los datos</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Tramo 1 · recibir y clasificar</h3>
+                <pre class="code">
+ListFile → FetchFile
+  → UpdateAttribute_origen
+  → PutHDFS_raw
+  → QueryRecord
+      validos → PublishKafkaRecord_2_6
+      rechazados → UpdateAttribute
+                   → PutHDFS_rechazados</pre
+                >
+                <div class="call note">
+                  <b>Archivo original primero</b>
+                  <div>
+                    PutHDFS_raw.success continúa hacia QueryRecord. Así
+                    conservas el CSV antes de transformarlo.
+                  </div>
+                </div>
+                <div class="call warn">
+                  <b>Dos tipos de problema</b>
+                  <div>
+                    Una recuperación fuera de rango sale por rechazados. Un
+                    fallo de lectura, SQL o escritura va a una cola de error.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Tramo 2 · entregar</h3>
+                <pre class="code">
+[Topic Kafka]
+  → ConsumeKafka_2_6Record
+  → MergeRecord_Plata (merged)
+  → UpdateAttribute_destino
+  → PutHDFS_validos
+      success → PutIceberg_Plata</pre
+                >
+                <ul class="bul">
+                  <li>
+                    Kafka conecta ambos tramos; no existe una conexión NiFi
+                    entre Publish y Consume.
+                  </li>
+                  <li>
+                    Conserva event_id y batch_id dentro del JSON para
+                    correlacionar los tramos.
+                  </li>
+                  <li>
+                    Guarda original CSV, válidos JSONL y rechazados JSONL en
+                    directorios separados. Los válidos también se cargan en
+                    Iceberg.
+                  </li>
+                </ul>
+                <div class="call tip">
+                  <b>Antes de construir</b>
+                  <div>
+                    Dibuja las rutas success, failure, original, validos,
+                    rechazados y parse.failure. No descartes errores
+                    automáticamente.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Prepara servicios y parámetros"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Prepara servicios y parámetros</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Un espacio por participante</h3>
+                <p>
+                  Crea un Process Group y un Parameter Context. Adapta
+                  <a href="../Datos/plata/parametros.example.json"
+                    >estos valores</a
+                  >
+                  al ambiente.
+                </p>
+                <pre class="code">
+input.dir = /tmp/nifi-plata/alumno01/r01/entrada
+run.id = r01
+hdfs.root = /user/workshop/alumno01/plata
+kafka.topic = ws.plata.alumno01.r01
+kafka.group = ws-plata-alumno01-r01
+kafka.brokers = BROKER_REAL:PUERTO</pre
+                >
+                <div class="call note">
+                  <b>Topic y ejecución nuevos</b>
+                  <div>
+                    Solicita un topic vacío y permisos de publicación/consumo.
+                    No compartas topic ni consumer group entre alumnos.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Verifica con el instructor</h3>
+                <ul class="bul">
+                  <li>
+                    Identidad de NiFi, permisos HDFS y Kafka, protocolo real del
+                    clúster y autenticación TLS/Kerberos cuando aplique.
+                  </li>
+                  <li>
+                    Recursos core-site.xml e hdfs-site.xml accesibles en los
+                    nodos. No incluyas secretos en el kit.
+                  </li>
+                  <li>
+                    ListFile y FetchFile en Primary Node, sin balanceo entre
+                    ellos; ruta compartida si debe tolerar cambio de primario.
+                  </li>
+                </ul>
+                <div class="call warn">
+                  <b>Compatibilidad</b>
+                  <div>
+                    Las propiedades del ejercicio corresponden a
+                    PublishKafkaRecord_2_6 / ConsumeKafka_2_6, como en el módulo
+                    anterior.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Recibe archivos periódicos y conserva el original"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Recibe archivos periódicos y conserva el original</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Configura la entrada</h3>
+                <table class="t">
+                  <tbody>
+                    <tr>
+                      <td>ListFile</td>
+                      <td>
+                        Input Directory: <code>#{input.dir}</code><br />File
+                        Filter: <code>lote_[0-9]{3}\.csv</code><br />Minimum
+                        File Age: 5 sec<br />Run Schedule: 10 sec
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>FetchFile</td>
+                      <td>
+                        File to Fetch:<br /><code
+                          >${absolute.path}/${filename}</code
+                        ><br />Completion Strategy: None
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>UpdateAttribute</td>
+                      <td>
+                        <code>source.filename = ${filename}</code><br /><code
+                          >pipeline.run = #{run.id}</code
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="call note">
+                  <b>Atributos y contenido</b>
+                  <div>
+                    UpdateAttribute añade metadatos al FlowFile; no cambia los
+                    campos dentro del CSV.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Archiva y luego procesa</h3>
+                <pre class="code">
+PutHDFS_raw
+Directory = #{hdfs.root}/#{run.id}/raw
+Hadoop Configuration Resources = #{hadoop.resources}
+Conflict Resolution Strategy = fail
+success → QueryRecord</pre
+                >
+                <p>
+                  Con el flujo listo, ejecuta desde la carpeta del kit en el
+                  servidor o montaje de NiFi:
+                </p>
+                <pre class="code">
+python3 enviar_lotes.py \
+  --destino /tmp/nifi-plata/alumno01/r01/entrada \
+  --intervalo 30</pre
+                >
+                <div class="call tip">
+                  <b>Llegada de lotes</b>
+                  <div>
+                    El emisor publica tres CSV completos mediante renombrado de
+                    archivos .part. No limpies el estado de ListFile durante la
+                    ejecución.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Define el contrato de los records"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Define el contrato de los records</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Qué representa cada observación</h3>
+                <table class="t">
+                  <tbody>
+                    <tr>
+                      <td>event_id / batch_id</td>
+                      <td>Identificador y lote de origen</td>
+                    </tr>
+                    <tr>
+                      <td>event_time / unit_id</td>
+                      <td>Hora UTC y unidad ficticia</td>
+                    </tr>
+                    <tr>
+                      <td>ore_tonnes</td>
+                      <td>Toneladas de mineral</td>
+                    </tr>
+                    <tr>
+                      <td>ag_grade_g_t</td>
+                      <td>Gramos de plata por tonelada</td>
+                    </tr>
+                    <tr>
+                      <td>recovery_pct</td>
+                      <td>Recuperación porcentual</td>
+                    </tr>
+                    <tr>
+                      <td>source_system</td>
+                      <td>SIMULADOR_TALLER</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>
+                  Archivos:
+                  <a href="../Datos/plata/datos/lote_001.csv" download
+                    >lote 1</a
+                  >
+                  ·
+                  <a href="../Datos/plata/datos/lote_002.csv" download
+                    >lote 2</a
+                  >
+                  ·
+                  <a href="../Datos/plata/datos/lote_003.csv" download>lote 3</a
+                  >.
+                </p>
+                <div class="call warn">
+                  <b>Errores intencionales</b>
+                  <div>
+                    Cada lote incluye tonelaje negativo y recuperación fuera de
+                    rango o ausente. NULL representa un valor nulo.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Habilita tres Controller Services</h3>
+                <ul class="bul">
+                  <li>
+                    <b>CSVReader_Plata:</b> Use Schema Text con
+                    <a href="../Datos/plata/operacion_plata.avsc"
+                      >operacion_plata.avsc</a
+                    >; Custom Format, coma, encabezado true, Null String = NULL.
+                  </li>
+                  <li>
+                    <b>JsonTreeReader_Plata:</b> Use Schema Text con el mismo
+                    esquema; se utiliza en ambos extremos de Kafka.
+                  </li>
+                  <li>
+                    <b>JsonRecordSetWriter_Plata:</b> Inherit Record Schema; Do
+                    Not Write Schema; One Line Per Object; Pretty Print false;
+                    conservar nulos (Never Suppress).
+                  </li>
+                </ul>
+                <div class="call tip">
+                  <b>Contrato explícito</b>
+                  <div>
+                    Las tres medidas son double nullable. El JSON conserva
+                    event_id, batch_id y source_system sin depender de atributos
+                    que no atraviesan Kafka.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Clasifica con QueryRecord"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Clasifica con QueryRecord</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Relationship: validos</h3>
+                <pre class="code">
+SELECT * FROM FLOWFILE
+WHERE COALESCE(
+  ore_tonnes &gt; 0
+  AND ag_grade_g_t &gt; 0
+  AND recovery_pct BETWEEN 0 AND 100,
+  FALSE
+)
+</pre
+                >
+                <p>
+                  Crea la propiedad dinámica <b>validos</b> con
+                  <a href="../Datos/plata/validos.sql">esta consulta</a>.
+                </p>
+                <div class="call note">
+                  <b>Regla didáctica</b>
+                  <div>
+                    Tonelaje y ley positivos; recuperación entre 0 y 100.
+                    COALESCE convierte los resultados nulos en FALSE.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Relationship: rechazados</h3>
+                <pre class="code">
+SELECT * FROM FLOWFILE
+WHERE NOT COALESCE(
+  ore_tonnes &gt; 0
+  AND ag_grade_g_t &gt; 0
+  AND recovery_pct BETWEEN 0 AND 100,
+  FALSE
+)
+</pre
+                >
+                <p>
+                  Copia
+                  <a href="../Datos/plata/rechazados.sql">rechazados.sql</a>
+                  en la segunda propiedad.
+                </p>
+                <div class="call note">
+                  <b>Conexiones</b>
+                  <div>
+                    Reader: CSVReader_Plata. Writer: JsonRecordSetWriter_Plata.
+                    Include Zero Record FlowFiles = false. Auto-terminate
+                    original después de archivar el CSV; conserva failure.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Publica y consume con Kafka"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Publica y consume con Kafka</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>PublishKafkaRecord_2_6</h3>
+                <pre class="code">
+Kafka Brokers = #{kafka.brokers}
+Topic Name = #{kafka.topic}
+Message Key Field = event_id
+Delivery Guarantee = Guarantee Replicated Delivery
+Use Transactions = false
+Failure Strategy = Route to Failure</pre
+                >
+                <p>
+                  Reader: JsonTreeReader_Plata.<br />Writer:
+                  JsonRecordSetWriter_Plata.
+                </p>
+                <div class="call tip">
+                  <b>Un record, un mensaje</b>
+                  <div>
+                    Conecta validos de QueryRecord. Envía failure a una cola de
+                    error; termina success después de la confirmación del
+                    broker.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>ConsumeKafka_2_6Record_2_0</h3>
+                <pre class="code">
+Kafka Brokers = #{kafka.brokers}
+Topic Name(s) = #{kafka.topic}
+Topic Name Format = names
+Group ID = #{kafka.group}
+Offset Reset = earliest</pre
+                >
+                <p>
+                  Mismos reader y writer. Conecta success a MergeRecord_Plata y
+                  conserva parse.failure.
+                </p>
+                <div class="call note">
+                  <b>Qué observar</b>
+                  <div>
+                    earliest no reinicia offsets existentes. El consumidor puede
+                    agrupar varios mensajes en un FlowFile; su número no
+                    equivale al número de records.
+                  </div>
+                </div>
+                <div class="call warn">
+                  <b>Reintentos</b>
+                  <div>
+                    Este flujo puede duplicar eventos al reprocesar. event_id
+                    identifica el evento; usarlo como clave Kafka no lo
+                    deduplica.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Agrupa records antes de escribir"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Agrupa records antes de escribir</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>MergeRecord_Plata · CFM 4.12</h3>
+                <pre class="code">
+Record Reader = JsonTreeReader_Plata
+Record Writer = JsonRecordSetWriter_Plata
+Merge Strategy = Bin-Packing Algorithm
+Minimum Number of Records = #{merge.min.records}
+Maximum Number of Records = #{merge.max.records}
+Minimum Bin Size = 0 B
+Maximum Bin Size = 1 MB
+Max Bin Age = #{merge.max.age}
+Maximum Number of Bins = 5
+Correlation Attribute Name = sin configurar
+Attribute Strategy = Keep Only Common Attributes</pre
+                >
+                <p>
+                  Valores del kit: mínimo <b>20</b>, máximo <b>1000</b>, edad
+                  <b>60 sec</b>. Timer driven, 1 sec, un Concurrent Task.
+                </p>
+                <div class="call note">
+                  <b>Valores para aprender</b>
+                  <div>
+                    El mínimo habilita el cierre; no espera a 1000. El tiempo
+                    permite emitir los registros restantes aunque sean menos de
+                    20.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Escribe grupos de records</h3>
+                <pre class="code">
+Consumidor Kafka → MergeRecord_Plata
+  merged → UpdateAttribute_destino
+         → PutHDFS_validos → PutIceberg_Plata
+  original → auto-terminate
+  failure → cola de error</pre
+                >
+                <ul class="bul">
+                  <li>
+                    Conserva JSONL en el writer y asigna filename después del
+                    merge.
+                  </li>
+                  <li>
+                    No correlaciones por event_id. batch_id permanece dentro de
+                    cada record.
+                  </li>
+                  <li>
+                    Revisa record.count, merge.count y merge.completion.reason.
+                    El total válido sigue siendo 66.
+                  </li>
+                </ul>
+                <div class="call warn">
+                  <b>Tiempo y tamaño</b>
+                  <div>
+                    Deja correr el processor hasta vaciar los bins. Son locales
+                    a cada nodo; ni el número de archivos ni su tamaño final son
+                    exactos.
+                  </div>
+                </div>
+                <p>
+                  <a href="../Datos/plata/README.md"
+                    >Guía y prueba del remanente por tiempo</a
+                  >.
+                </p>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Entrega los registros en HDFS"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Entrega los registros en HDFS</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>UpdateAttribute antes de cada destino</h3>
+                <pre class="code">
+filename = ${uuid}.jsonl
+mime.type = application/x-ndjson
+pipeline.run = #{run.id}</pre
+                >
+                <p>
+                  Usa un UpdateAttribute para la rama rechazada y otro después
+                  de MergeRecord (relación merged).
+                </p>
+                <div class="call note">
+                  <b>Nombre estable</b>
+                  <div>
+                    ${uuid} pertenece al FlowFile. Conserva el mismo nombre al
+                    reintentar; no generes un UUID nuevo en cada intento.
+                  </div>
+                </div>
+                <div class="call tip">
+                  <b>Formato de salida</b>
+                  <div>
+                    JSONL contiene un objeto JSON por línea. Conserva los IDs y
+                    campos originales para poder conciliar.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Dos destinos HDFS</h3>
+                <pre class="code">
+PutHDFS_validos:
+  #{hdfs.root}/#{run.id}/validos
+
+PutHDFS_rechazados:
+  #{hdfs.root}/#{run.id}/rechazados
+
+Hadoop Configuration Resources:
+  #{hadoop.resources}
+Conflict Resolution Strategy = fail</pre
+                >
+                <ul class="bul">
+                  <li>
+                    success de válidos → PutIceberg; termina success de
+                    rechazados. Conserva failure de ambos.
+                  </li>
+                  <li>
+                    Si hay conflicto, inspecciona el archivo existente; no lo
+                    reemplaces para ocultar el problema.
+                  </li>
+                  <li>
+                    La autenticación y los permisos deben corresponder al
+                    proceso NiFi, no solo a tu terminal.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Prepara la tabla Iceberg"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Prepara la tabla Iceberg</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Antes de iniciar el flujo</h3>
+                <p>
+                  En Hue, abre el editor <b>Impala</b> y ejecuta
+                  <a href="../Datos/plata/crear_tabla_iceberg.sql"
+                    >crear_tabla_iceberg.sql</a
+                  >. Adapta alumno, ejecución y ruta.
+                </p>
+                <ul class="bul">
+                  <li>
+                    Usa una tabla y ubicación nuevas, con conteo inicial 0.
+                  </li>
+                  <li>
+                    Conserva los ocho campos del contrato: event_time sigue como
+                    STRING UTC.
+                  </li>
+                  <li>
+                    La LOCATION de Iceberg es distinta de la carpeta de JSONL
+                    válidos.
+                  </li>
+                </ul>
+                <div class="call tip">
+                  <b>Alcance de esta práctica</b>
+                  <div>
+                    Crear la tabla, cargarla desde NiFi y consultar sus filas.
+                    Snapshots, evolución y mantenimiento se verán en el taller
+                    de Iceberg.
+                  </div>
+                </div>
+                <div class="call warn">
+                  <b>Sin carga automática</b>
+                  <div>
+                    PutIceberg necesita una tabla existente. Crear la tabla no
+                    registra los archivos JSONL previos.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <pre class="code">
+CREATE DATABASE IF NOT EXISTS ws_alumno01;
+
+CREATE TABLE ws_alumno01.operacion_plata_r01 (
+  event_id STRING,
+  batch_id STRING,
+  event_time STRING,
+  unit_id STRING,
+  ore_tonnes DOUBLE,
+  ag_grade_g_t DOUBLE,
+  recovery_pct DOUBLE,
+  source_system STRING
+)
+STORED BY ICEBERG
+LOCATION &#x27;/user/workshop/alumno01/plata/r01/iceberg/operacion_plata&#x27;
+TBLPROPERTIES (&#x27;format-version&#x27; = &#x27;2&#x27;);</pre
+                >
+                <p>
+                  Confirma el Runtime y los permisos con el instructor. El kit
+                  incluye SHOW CREATE TABLE y el conteo inicial.
+                </p>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Conecta NiFi al catálogo de Iceberg"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Conecta NiFi al catálogo de Iceberg</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>CFM 4.12 · NiFi 2.6.0</h3>
+                <p>
+                  Añade <b>HiveCatalogService</b> con nombre
+                  <b>HiveCatalog_Plata</b> en el Process Group.
+                </p>
+                <pre class="code">
+Hadoop Configuration Resources =
+  #{hive.config.resources}
+
+Hive Metastore URI =
+  usar la configuración de hive-site.xml
+
+Default Warehouse Location =
+  sin sobrescribir</pre
+                >
+                <p>
+                  El parámetro incluye core-site.xml, hdfs-site.xml y
+                  hive-site.xml del clúster destino, accesibles desde cada nodo
+                  NiFi.
+                </p>
+                <div class="call note">
+                  <b>Un mismo catálogo</b>
+                  <div>
+                    HiveCatalog_Plata debe usar el mismo HMS que Impala. La
+                    dirección del metastore es Thrift, no JDBC.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Nombre de la tabla y acceso</h3>
+                <pre class="code">
+iceberg.namespace = ws_alumno01
+iceberg.table = operacion_plata_r01</pre
+                >
+                <ul class="bul">
+                  <li>
+                    Usa el nombre de tabla sin prefijo de base en iceberg.table.
+                  </li>
+                  <li>
+                    Configura el Kerberos User Service de PutIceberg cuando
+                    aplique y confirma permisos de catálogo y escritura HDFS.
+                  </li>
+                  <li>
+                    Habilita el catálogo y el JsonTreeReader_Plata existente.
+                  </li>
+                </ul>
+                <div class="call note">
+                  <b>¿Por qué Hive Metastore?</b>
+                  <div>
+                    HMS registra el nombre y el puntero a la metadata vigente.
+                    Iceberg gestiona sus archivos de metadata y datos; el
+                    catálogo permite que NiFi e Impala encuentren la misma
+                    tabla.
+                  </div>
+                </div>
+                <p>
+                  <a href="../Datos/plata/ICEBERG.md"
+                    >Configuración y requisitos del ambiente</a
+                  >.
+                </p>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Carga la tabla con PutIceberg"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Carga la tabla con PutIceberg</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Extiende la salida existente</h3>
+                <pre class="code">
+Consumidor Kafka existente
+  → MergeRecord_Plata (merged)
+  → UpdateAttribute_destino
+  → PutHDFS_validos
+      success → PutIceberg_Plata
+                  success → terminar
+                  failure → cola de error</pre
+                >
+                <ul class="bul">
+                  <li>Quita auto-terminate de success en PutHDFS_validos.</li>
+                  <li>
+                    El mismo contenido JSONL continúa a PutIceberg; no necesitas
+                    releer HDFS.
+                  </li>
+                  <li>
+                    Los rechazados siguen en su destino HDFS y no llegan a esta
+                    tabla.
+                  </li>
+                </ul>
+                <div class="call warn">
+                  <b>Comprueba ambos destinos</b>
+                  <div>
+                    La escritura HDFS y la escritura Iceberg son independientes.
+                    Un success de PutHDFS no confirma la carga de la tabla.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Propiedades de PutIceberg_Plata</h3>
+                <pre class="code">
+Record Reader = JsonTreeReader_Plata
+Catalog Service = HiveCatalog_Plata
+Catalog Namespace = #{iceberg.namespace}
+Table Name = #{iceberg.table}
+File Format = PARQUET
+Kerberos User Service = servicio del ambiente</pre
+                >
+                <p>
+                  Usa un Concurrent Task. PutIceberg interpreta el esquema
+                  explícito y escribe mediante Iceberg; no necesita Record
+                  Writer.
+                </p>
+                <div class="call note">
+                  <b>Append</b>
+                  <div>
+                    No deduplica por event_id. Antes de reenviar un lote, revisa
+                    la tabla para evitar duplicar registros. Conserva failure
+                    para inspección.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Comprueba la tabla desde Impala"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Comprueba la tabla desde Impala</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Después de terminar la ingesta</h3>
+                <pre class="code">
+SELECT COUNT(*) AS filas,
+       COUNT(DISTINCT event_id) AS eventos_unicos
+FROM ws_alumno01.operacion_plata_r01;
+-- Esperado: 66 / 66
+
+SELECT batch_id, COUNT(*) AS filas
+FROM ws_alumno01.operacion_plata_r01
+GROUP BY batch_id
+ORDER BY batch_id;
+-- Esperado: 22 filas por lote</pre
+                >
+                <p>
+                  Ejecuta también las consultas de duplicados e inválidos de
+                  <a href="../Datos/plata/validar_iceberg.sql"
+                    >validar_iceberg.sql</a
+                  >.
+                </p>
+              </div>
+              <div class="txt">
+                <h3>Evidencia de la entrega</h3>
+                <ul class="bul">
+                  <li>Raw: tres CSV originales.</li>
+                  <li>HDFS: 66 records válidos y 6 rechazados.</li>
+                  <li>
+                    Iceberg: los mismos 66 válidos, 66 IDs distintos y cero
+                    registros inválidos.
+                  </li>
+                  <li>
+                    Captura del CREATE/SHOW CREATE TABLE, canvas con PutIceberg
+                    y resultados SQL.
+                  </li>
+                </ul>
+                <div class="call tip">
+                  <b>Mismos datos, dos representaciones</b>
+                  <div>
+                    Los JSONL y la tabla contienen las mismas observaciones; no
+                    son 132 eventos. Conserva ambos para los próximos módulos.
+                  </div>
+                </div>
+                <div class="call note">
+                  <b>Consulta actualizada</b>
+                  <div>
+                    REFRESH actualiza lo que ve Impala tras una escritura
+                    externa. No incorpora archivos copiados manualmente en la
+                    carpeta de la tabla.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Ejecuta, concilia y explica"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Ejecuta, concilia y explica</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Orden de arranque</h3>
+                <ul class="bul">
+                  <li>Verifica el kit: python3 validar.py.</li>
+                  <li>
+                    Con la tabla vacía, inicia PutIceberg, consumidor y
+                    destinos; después el resto del flujo.
+                  </li>
+                  <li>Ejecuta enviar_lotes.py y observa tres llegadas.</li>
+                  <li>
+                    Espera las escrituras y el cierre de bins de MergeRecord por
+                    Max Bin Age; revisa las colas de error.
+                  </li>
+                </ul>
+                <table class="t">
+                  <tbody>
+                    <tr>
+                      <td><b>Cada lote</b></td>
+                      <td>24 = 22 válidos + 2 rechazados</td>
+                    </tr>
+                    <tr>
+                      <td><b>Total</b></td>
+                      <td>72 = 66 válidos + 6 rechazados</td>
+                    </tr>
+                    <tr>
+                      <td><b>Raw</b></td>
+                      <td>3 CSV íntegros</td>
+                    </tr>
+                    <tr>
+                      <td><b>JSONL</b></td>
+                      <td>Conteo de records, no de archivos</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="call note">
+                  <b>Trazabilidad</b>
+                  <div>
+                    Busca un event_id y batch_id en ambos tramos. Los UUID de
+                    los FlowFiles no son los mismos antes y después de Kafka.
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Valida desde el edge node</h3>
+                <p>
+                  Adapta tu ruta; usa una terminal autenticada y comprueba que
+                  los comandos HDFS finalizan sin error.
+                </p>
+                <pre class="code">
+hdfs dfs -cat \
+  &#x27;/user/workshop/alumno01/plata/r01/validos/*.jsonl&#x27; \
+  &gt; validos.jsonl
+
+hdfs dfs -cat \
+  &#x27;/user/workshop/alumno01/plata/r01/rechazados/*.jsonl&#x27; \
+  &gt; rechazados.jsonl
+
+python3 validar.py --validos validos.jsonl \
+  --rechazados rechazados.jsonl</pre
+                >
+                <div class="call tip">
+                  <b>Criterio de aceptación</b>
+                  <div>
+                    El validador debe confirmar 66/6, contenido íntegro y
+                    ausencia de IDs perdidos o duplicados. Si falla, investiga
+                    antes de dar el flujo por terminado.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide"
+          data-title="Reto de operación y entrega final"
+          data-module="9"
+        >
+          <div class="topbar"></div>
+          <header class="hdr ed">
+            <span class="mtag">Módulo 09 · Integrador de NiFi · Bloque 4</span>
+            <h2>Reto de operación y entrega final</h2>
+          </header>
+          <div class="body ed">
+            <div class="cols">
+              <div class="txt">
+                <h3>Comprueba el back pressure</h3>
+                <ul class="bul">
+                  <li>
+                    Repite con otro run.id, topic/grupo, ruta de entrada, tabla
+                    y ubicación Iceberg nuevos.
+                  </li>
+                  <li>
+                    Detén PutHDFS_validos y fija el umbral de objetos de su
+                    conexión en 1.
+                  </li>
+                  <li>
+                    Envía los lotes. Observa la cola y el freno al consumidor;
+                    un batch puede rebasar el umbral.
+                  </li>
+                  <li>
+                    Reinicia el destino, espera el drenaje y vuelve a conciliar.
+                  </li>
+                </ul>
+                <div class="call tip">
+                  <b>Explica el comportamiento</b>
+                  <div>
+                    ¿Qué se conserva en Kafka? ¿Qué queda en la cola NiFi? ¿Qué
+                    diferencia hay entre detener el destino y reprocesar
+                    mensajes?
+                  </div>
+                </div>
+              </div>
+              <div class="txt">
+                <h3>Entrega tu solución</h3>
+                <ul class="bul">
+                  <li>Captura del canvas y Parameter Context sin secretos.</li>
+                  <li>
+                    Evidencia HDFS: 72 = 66 + 6; Iceberg: 66 filas únicas.
+                  </li>
+                  <li>IDs rechazados y causa de cada rechazo.</li>
+                  <li>Trazabilidad, agrupación de records y back pressure.</li>
+                  <li>
+                    CREATE/SHOW CREATE TABLE y flow definition sin secretos.
+                  </li>
+                </ul>
+                <p>
+                  <a href="../Datos/plata/README.md"
+                    >Guía, propiedades completas y referencias oficiales</a
+                  >.
+                </p>
+                <div class="call note">
+                  <b>Para la siguiente etapa</b>
+                  <div>
+                    Conserva los JSONL, la tabla y el contrato de los records.
+                    Continuaremos con Spark y las funciones avanzadas de Iceberg
+                    en los siguientes módulos.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg"></span>
+          </footer>
+        </section>
+        <section
+          class="slide cover active"
+          data-title="Cierre"
+          data-module="0"
+          data-key="1"
+        >
+          <div class="sec-l ed" style="width: 1000px">
+            <div class="logo">
+              <img
+                src="https://dops-242.s3.us-east-2.amazonaws.com/guide/assets/logo-cloudera-white.svg"
+                alt="Cloudera"
+              /><span class="logo-txt">CLOUDERA</span>
+            </div>
+            <div class="kick">Fin del laboratorio</div>
+            <h1>¡Gracias!</h1>
+            <p class="sub">
+              Preguntas, dudas y próximos pasos con el equipo de Cloudera
+              Professional Services.
+            </p>
+            <div class="chips" style="margin-top: 24px">
+              <span class="chip w">docs.cloudera.com</span
+              ><span class="chip w">Cloudera DataFlow</span
+              ><span class="chip w">Apache NiFi</span>
+            </div>
+          </div>
+          <div class="meta ed">
+            Industrias Peñoles · Beneficio y Analítica de Datos<br />Material
+            basado en DOPS-242 “Ingesting with Cloudera DataFlow” · Cloudera
+            Education
+          </div>
+          <footer class="ftr">
+            <span
+              >Cloudera DataFlow · Apache NiFi — Laboratorio para Industrias
+              Peñoles</span
+            ><span class="pg">130 / 130</span>
+          </footer>
+        </section>
+      </div>
+    </div>
+
+    <div id="prog" style="width: 100%"></div>
+    <div id="edhint">
+      Modo edición: haz clic en cualquier texto para modificarlo · pega capturas
+      con Ctrl+V · clic en una imagen para cambiar su URL · Ctrl+S guarda
+    </div>
+    <nav id="toc" class="">
+      <h3>Índice del laboratorio</h3>
+      <div id="tocl"></div>
+    </nav>
+    <div id="lb"><img id="lbi" alt="" /></div>
+    <div id="toast"></div>
+    <div id="bar">
+      <button id="btoc" title="Índice (I)">☰ Índice</button>
+      <button id="bprev" title="Anterior (←)">◀</button>
+      <span class="cnt" id="cnt">130 / 130</span>
+      <button id="bnext" title="Siguiente (→)">▶</button>
+      <span class="ttl" id="ttl">Cierre</span>
+      <span class="sp"></span>
+      <button id="bdup" class="edonly" title="Duplicar diapositiva">
+        ⧉ Duplicar
+      </button>
+      <button id="bdel" class="edonly" title="Eliminar diapositiva">
+        🗑 Eliminar
+      </button>
+      <button id="bed" title="Editar textos" class="">✎ Editar</button>
+      <button
+        id="bsave"
+        title="Guardar una copia del HTML con tus cambios (Ctrl+S)"
+      >
+        💾 Guardar
+      </button>
+      <button id="bpdf" title="Imprimir / Guardar como PDF">PDF</button>
+      <button id="bfs" class="pri" title="Pantalla completa (F)">
+        ⛶ Pantalla completa
+      </button>
+    </div>
+
+    <script>
+      (function () {
+        const deck = document.getElementById("deck");
+        const slides = () => [...deck.querySelectorAll(".slide")];
+        let cur = 0,
+          dirty = false;
+        const $ = (id) => document.getElementById(id);
+        function fit() {
+          const st = $("stage");
+          const s = Math.min(st.clientWidth / 1280, st.clientHeight / 720);
+          deck.style.transform = "scale(" + s + ")";
+        }
+        function number() {
+          const all = slides();
+          all.forEach((s, i) => {
+            const p = s.querySelector(".pg");
+            if (p) p.textContent = i + 1 + " / " + all.length;
+          });
+        }
+        function show(i) {
+          const all = slides();
+          cur = Math.max(0, Math.min(i, all.length - 1));
+          all.forEach((s, k) => s.classList.toggle("active", k === cur));
+          $("cnt").textContent = cur + 1 + " / " + all.length;
+          $("ttl").textContent = all[cur].dataset.title || "";
+          $("prog").style.width = ((cur + 1) / all.length) * 100 + "%";
+          history.replaceState(null, "", "#" + (cur + 1));
+          markToc();
+        }
+        function next() {
+          show(cur + 1);
+        }
+        function prev() {
+          show(cur - 1);
+        }
+        const editing = () => document.body.classList.contains("editing");
+        function inEditable(e) {
+          const t = e.target;
+          return (
+            editing() && t && t.closest && t.closest("[contenteditable=true]")
+          );
+        }
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            closeToc();
+            $("lb").classList.remove("open");
+            if (document.activeElement) document.activeElement.blur();
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+            e.preventDefault();
+            save();
+            return;
+          }
+          if (inEditable(e)) {
+            if (e.key === "PageDown") {
+              e.preventDefault();
+              next();
+            }
+            if (e.key === "PageUp") {
+              e.preventDefault();
+              prev();
+            }
+            return;
+          }
+          if (
+            ["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(
+              e.key,
+            )
+          ) {
+            e.preventDefault();
+            next();
+          } else if (
+            ["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)
+          ) {
+            e.preventDefault();
+            prev();
+          } else if (e.key === "Home") {
+            show(0);
+          } else if (e.key === "End") {
+            show(slides().length - 1);
+          } else if (e.key.toLowerCase() === "f") {
+            fs();
+          } else if (e.key.toLowerCase() === "i") {
+            toggleToc();
+          }
+        });
+        function fs() {
+          if (!document.fullscreenElement) {
+            (
+              document.documentElement.requestFullscreen ||
+              document.documentElement.webkitRequestFullscreen
+            ).call(document.documentElement);
+          } else {
+            document.exitFullscreen();
+          }
+        }
+        document.addEventListener("fullscreenchange", () => {
+          document.body.classList.toggle("fs", !!document.fullscreenElement);
+          $("bfs").innerHTML = document.fullscreenElement
+            ? "&#x2922; Salir"
+            : "&#x26F6; Pantalla completa";
+          setTimeout(fit, 60);
+        });
+        let hideT;
+        document.addEventListener("mousemove", (e) => {
+          if (!document.body.classList.contains("fs")) return;
+          if (e.clientY > window.innerHeight - 90) {
+            document.body.classList.add("showbar");
+            clearTimeout(hideT);
+            hideT = setTimeout(
+              () => document.body.classList.remove("showbar"),
+              2500,
+            );
+          }
+        });
+        // swipe
+        let tx = null;
+        deck.addEventListener(
+          "touchstart",
+          (e) => {
+            tx = e.touches[0].clientX;
+          },
+          { passive: true },
+        );
+        deck.addEventListener("touchend", (e) => {
+          if (tx === null || editing()) return;
+          const d = e.changedTouches[0].clientX - tx;
+          if (Math.abs(d) > 50) (d < 0 ? next : prev)();
+          tx = null;
+        });
+        // índice
+        function buildToc() {
+          const t = $("tocl");
+          t.innerHTML = "";
+          slides().forEach((s, i) => {
+            const a = document.createElement("a");
+            a.href = "#";
+            a.textContent = s.dataset.title || "Diapositiva " + (i + 1);
+            if (
+              s.dataset.section ||
+              s.classList.contains("cover") ||
+              (s.dataset.module === "0" && s.dataset.key)
+            )
+              a.className = "s";
+            a.dataset.i = i;
+            a.onclick = (ev) => {
+              ev.preventDefault();
+              show(i);
+              closeToc();
+            };
+            t.appendChild(a);
+          });
+          markToc();
+        }
+        function markToc() {
+          document
+            .querySelectorAll("#tocl a")
+            .forEach((a) => a.classList.toggle("cur", +a.dataset.i === cur));
+        }
+        function toggleToc() {
+          const o = $("toc").classList.toggle("open");
+          if (o) {
+            buildToc();
+            const c = document.querySelector("#tocl a.cur");
+            c && c.scrollIntoView({ block: "center" });
+          }
+        }
+        function closeToc() {
+          $("toc").classList.remove("open");
+        }
+        // lightbox
+        deck.addEventListener("click", (e) => {
+          const im = e.target.closest("figure.shot img");
+          if (!im) return;
+          if (editing()) {
+            e.preventDefault();
+            const u = prompt(
+              "URL de la imagen (o deja vacío para cancelar).\nTambién puedes pegar una captura con Ctrl+V dentro del texto.",
+              im.getAttribute("src"),
+            );
+            if (u) {
+              im.src = u;
+              im.classList.remove("broken");
+              dirty = true;
+            }
+            return;
+          }
+          $("lbi").src = im.src;
+          $("lb").classList.add("open");
+        });
+        $("lb").onclick = () => $("lb").classList.remove("open");
+        // edición
+        function setEdit(on) {
+          document.body.classList.toggle("editing", on);
+          deck.querySelectorAll(".ed").forEach((el) => {
+            if (on) el.setAttribute("contenteditable", "true");
+            else el.removeAttribute("contenteditable");
+          });
+          $("bed").classList.toggle("on", on);
+          $("bed").innerHTML = on
+            ? "&#10003; Terminar edición"
+            : "&#9998; Editar";
+        }
+        deck.addEventListener("input", () => {
+          dirty = true;
+        });
+        deck.addEventListener("paste", (e) => {
+          if (!editing()) return;
+          const items = [...((e.clipboardData || {}).items || [])];
+          const f = items.find((i) => i.type && i.type.startsWith("image/"));
+          if (f) {
+            e.preventDefault();
+            const r = new FileReader();
+            r.onload = () => {
+              document.execCommand(
+                "insertHTML",
+                false,
+                '<figure class="shot"><img src="' +
+                  r.result +
+                  '" alt="captura"></figure>',
+              );
+              dirty = true;
+            };
+            r.readAsDataURL(f.getAsFile());
+            return;
+          }
+          const txt = e.clipboardData.getData("text/plain");
+          if (txt) {
+            e.preventDefault();
+            document.execCommand("insertText", false, txt);
+          }
+        });
+        function dup() {
+          const s = slides()[cur];
+          const c = s.cloneNode(true);
+          c.classList.remove("active");
+          s.after(c);
+          if (editing())
+            c.querySelectorAll(".ed").forEach((el) =>
+              el.setAttribute("contenteditable", "true"),
+            );
+          number();
+          dirty = true;
+          show(cur + 1);
+        }
+        function del() {
+          if (slides().length < 2) return;
+          if (!confirm("¿Eliminar esta diapositiva?")) return;
+          slides()[cur].remove();
+          number();
+          dirty = true;
+          show(cur);
+        }
+        function save() {
+          const wasEd = editing();
+          if (wasEd) setEdit(false);
+          closeToc();
+          const clone = document.documentElement.cloneNode(true);
+          clone.querySelector("body").className = "";
+          clone
+            .querySelectorAll(".slide")
+            .forEach((s, i) => s.classList.toggle("active", i === cur));
+          clone.querySelector("#tocl").innerHTML = "";
+          const lbi = clone.querySelector("#lbi");
+          if (lbi) lbi.removeAttribute("src");
+          clone
+            .querySelectorAll("img.broken")
+            .forEach((i) => i.classList.remove("broken"));
+          clone.querySelector("#deck").removeAttribute("style");
+          const htmlStr = "<!DOCTYPE html>\n" + clone.outerHTML;
+          const b = new Blob([htmlStr], { type: "text/html" });
+          const a = document.createElement("a");
+          let name = decodeURIComponent(
+            location.pathname.split("/").pop() || "Curso_NiFi_CDF_Penoles.html",
+          );
+          if (!/\.html?$/i.test(name)) name = "Curso_NiFi_CDF_Penoles.html";
+          a.href = URL.createObjectURL(b);
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+          }, 1500);
+          dirty = false;
+          if (wasEd) setEdit(true);
+          toast(
+            "Archivo guardado: " + name + " (revisa tu carpeta de Descargas)",
+          );
+        }
+        function toast(m) {
+          const t = $("toast");
+          t.textContent = m;
+          t.style.display = "block";
+          clearTimeout(t._h);
+          t._h = setTimeout(() => (t.style.display = "none"), 3500);
+        }
+        window.addEventListener("beforeunload", (e) => {
+          if (dirty) {
+            e.preventDefault();
+            e.returnValue = "";
+          }
+        });
+        $("bprev").onclick = prev;
+        $("bnext").onclick = next;
+        $("bfs").onclick = fs;
+        $("btoc").onclick = toggleToc;
+        $("bed").onclick = () => setEdit(!editing());
+        $("bsave").onclick = save;
+        $("bdup").onclick = dup;
+        $("bdel").onclick = del;
+        $("bpdf").onclick = () => {
+          setEdit(false);
+          window.print();
+        };
+        window.addEventListener("resize", fit);
+        number();
+        fit();
+        const h = parseInt(location.hash.slice(1));
+        show(isNaN(h) ? 0 : h - 1);
+      })();
+    </script>
+  </body>
+</html>

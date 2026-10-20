@@ -1,0 +1,17 @@
+{
+  "_nota": "Referencia para crear un Parameter Context en NiFi; no es una flow definition importable. Sustituye alumno01 y r01 para cada ejecuci\u00f3n.",
+  "input.dir": "/tmp/nifi-plata/alumno01/r01/entrada",
+  "run.id": "r01",
+  "student.id": "alumno01",
+  "hdfs.root": "/user/workshop/alumno01/plata",
+  "hadoop.resources": "/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml",
+  "kafka.brokers": "BROKER_REAL:PUERTO",
+  "kafka.topic": "ws.plata.alumno01.r01",
+  "kafka.group": "ws-plata-alumno01-r01",
+  "iceberg.namespace": "workshop_alumno01",
+  "iceberg.table": "operacion_plata_r01",
+  "hive.config.resources": "/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml,/etc/hive/conf/hive-site.xml",
+  "merge.min.records": "20",
+  "merge.max.records": "1000",
+  "merge.max.age": "60 sec"
+}

@@ -1,0 +1,51 @@
+{
+  "type": "record",
+  "name": "SilverOperation",
+  "namespace": "workshop.simulated",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string"
+    },
+    {
+      "name": "batch_id",
+      "type": "string"
+    },
+    {
+      "name": "event_time",
+      "type": "string"
+    },
+    {
+      "name": "unit_id",
+      "type": "string"
+    },
+    {
+      "name": "ore_tonnes",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null
+    },
+    {
+      "name": "ag_grade_g_t",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null
+    },
+    {
+      "name": "recovery_pct",
+      "type": [
+        "null",
+        "double"
+      ],
+      "default": null
+    },
+    {
+      "name": "source_system",
+      "type": "string"
+    }
+  ]
+}
