@@ -1386,14 +1386,14 @@
                   <li>
                     Descarga el template
                     <a
-                      href="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/Convert_CSV_to_JSON.xml"
-                      >Convert_CSV_to_JSON.xml</a
+                      href="https://github.com/luisdguti/workshop_penoles/blob/main/Templates/Lab_Penoles.json"
+                      >Lab_Penoles.json</a
                     >
                     y los datos
                     <a
-                      href="https://dops-242.s3.us-east-2.amazonaws.com/guide/record-based-components/images/users.txt"
+                      href="https://github.com/luisdguti/workshop_penoles/blob/main/Datos/users.txt"
                       >users.txt</a
-                    >.
+                    >. Dirígete hacia la etiqueta <b>CONVERT CSV TO JSON</b>.
                   </li>
                   <li>
                     Crea el Process Group <code>Convert CSV to JSON</code> y
@@ -2038,11 +2038,11 @@ male:    SELECT * FROM FLOWFILE WHERE gender = 'M'</pre
               <div class="txt">
                 <ol class="steps" start="1" style="counter-reset: st 0">
                   <li>
-                    Descarga el template
+                    En el template anterior
                     <a
-                      href="https://dops-242.s3.us-east-2.amazonaws.com/guide/enriching-record-data/images/Update_Record_Processor.xml"
-                      >Update_Record_Processor.xml</a
-                    >.
+                      href="https://github.com/luisdguti/workshop_penoles/blob/main/Templates/Lab_Penoles.json"
+                      >Lab_Penoles.json</a
+                    >. Dirígete hacia la etiqueta <b>UPDATE RECORD</b>.
                   </li>
                   <li>
                     Crea el Process Group <code>Update_Record_processor</code>,
@@ -3598,10 +3598,16 @@ $ hdfs dfs -cat /tmp/nifidata/&lt;filename&gt;</pre
               <div class="txt">
                 <h3>Tu kit de trabajo</h3>
                 <p>
-                  <a href="../Datos/plata/kit_integrador_plata.zip" download
-                    >Descargar kit completo (.zip)</a
+                  <a
+                    href="https://github.com/luisdguti/workshop_penoles/tree/main/Datos/plata"
+                    download
+                    >Revisa el kit completo</a
                   >
-                  · <a href="../Datos/plata/README.md">Guía detallada</a>
+                  ·
+                  <a
+                    href="https://github.com/luisdguti/workshop_penoles/blob/main/Datos/plata/README.md"
+                    >Guía detallada</a
+                  >
                 </p>
                 <table class="t">
                   <tbody>
@@ -3738,7 +3744,8 @@ ListFile → FetchFile
                 <h3>Un espacio por participante</h3>
                 <p>
                   Crea un Process Group y un Parameter Context. Adapta
-                  <a href="../Datos/plata/parametros.example.json"
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/parametros.example.json"
                     >estos valores</a
                   >
                   al ambiente.
@@ -3923,15 +3930,22 @@ python3 enviar_lotes.py \
                 </table>
                 <p>
                   Archivos:
-                  <a href="../Datos/plata/datos/lote_001.csv" download
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/datos/lote_001.csv"
+                    download
                     >lote 1</a
                   >
                   ·
-                  <a href="../Datos/plata/datos/lote_002.csv" download
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/datos/lote_002.csv"
+                    download
                     >lote 2</a
                   >
                   ·
-                  <a href="../Datos/plata/datos/lote_003.csv" download>lote 3</a
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/datos/lote_003.csv"
+                    download
+                    >lote 3</a
                   >.
                 </p>
                 <div class="call warn">
@@ -3947,7 +3961,8 @@ python3 enviar_lotes.py \
                 <ul class="bul">
                   <li>
                     <b>CSVReader_Plata:</b> Use Schema Text con
-                    <a href="../Datos/plata/operacion_plata.avsc"
+                    <a
+                      href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/operacion_plata.avsc"
                       >operacion_plata.avsc</a
                     >; Custom Format, coma, encabezado true, Null String = NULL.
                   </li>
@@ -4005,7 +4020,10 @@ WHERE COALESCE(
                 >
                 <p>
                   Crea la propiedad dinámica <b>validos</b> con
-                  <a href="../Datos/plata/validos.sql">esta consulta</a>.
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/validos.sql"
+                    >esta consulta</a
+                  >.
                 </p>
                 <div class="call note">
                   <b>Regla didáctica</b>
@@ -4029,7 +4047,10 @@ WHERE NOT COALESCE(
                 >
                 <p>
                   Copia
-                  <a href="../Datos/plata/rechazados.sql">rechazados.sql</a>
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/rechazados.sql"
+                    >rechazados.sql</a
+                  >
                   en la segunda propiedad.
                 </p>
                 <div class="call note">
@@ -4196,7 +4217,8 @@ Consumidor Kafka → MergeRecord_Plata
                   </div>
                 </div>
                 <p>
-                  <a href="../Datos/plata/README.md"
+                  <a
+                    href="https://github.com/luisdguti/workshop_penoles/blob/main/Datos/plata/README.md"
                     >Guía y prueba del remanente por tiempo</a
                   >.
                 </p>
@@ -4301,7 +4323,8 @@ Conflict Resolution Strategy = fail</pre
                 <h3>Antes de iniciar el flujo</h3>
                 <p>
                   En Hue, abre el editor <b>Impala</b> y ejecuta
-                  <a href="../Datos/plata/crear_tabla_iceberg.sql"
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/crear_tabla_iceberg.sql"
                     >crear_tabla_iceberg.sql</a
                   >. Adapta alumno, ejecución y ruta.
                 </p>
@@ -4435,7 +4458,8 @@ iceberg.table = operacion_plata_r01</pre
                   </div>
                 </div>
                 <p>
-                  <a href="../Datos/plata/ICEBERG.md"
+                  <a
+                    href="https://github.com/luisdguti/workshop_penoles/blob/main/Datos/plata/ICEBERG.md"
                     >Configuración y requisitos del ambiente</a
                   >.
                 </p>
@@ -4552,7 +4576,8 @@ ORDER BY batch_id;
                 >
                 <p>
                   Ejecuta también las consultas de duplicados e inválidos de
-                  <a href="../Datos/plata/validar_iceberg.sql"
+                  <a
+                    href="https://raw.githubusercontent.com/luisdguti/workshop_penoles/refs/heads/main/Datos/plata/validar_iceberg.sql"
                     >validar_iceberg.sql</a
                   >.
                 </p>
@@ -4740,7 +4765,8 @@ python3 validar.py --validos validos.jsonl \
                   </li>
                 </ul>
                 <p>
-                  <a href="../Datos/plata/README.md"
+                  <a
+                    href="https://github.com/luisdguti/workshop_penoles/blob/main/Datos/plata/README.md"
                     >Guía, propiedades completas y referencias oficiales</a
                   >.
                 </p>
