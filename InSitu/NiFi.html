@@ -1224,7 +1224,8 @@
                         <b>Database Connection URL</b> =
                         <code
                           >jdbc:hive2://master.example.com:10004/default</code
-                        >
+                        >. Solicitar al administrador del cluster la URL de
+                        conexión a Hive.
                       </li>
                       <li>
                         <b>Hive Configuration Resources</b> =
@@ -3131,9 +3132,7 @@ $ ls -lt /tmp/nifi/opt</pre
                   <li>
                     Agrega <code>Integrate ListFile</code> con
                     <b>Input Directory</b> =
-                    <code
-                      >/home/training/training_materials/nifi/data/integrate</code
-                    >.
+                    <code>/tmp/training_materials/nifi/data/integrate</code>.
                   </li>
                   <li>
                     Agrega <code>Integrate FetchFile</code> con

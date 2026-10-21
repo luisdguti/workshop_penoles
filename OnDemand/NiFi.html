@@ -5724,9 +5724,7 @@ FlowFile Attribute Map Content
                   </li>
                   <li>
                     Agrega <code>NEL ListFile</code> con
-                    <b>Input Directory</b> =
-                    <code>/home/training/training_materials/nifi/data/nel</code
-                    >.
+                    <b>Input Directory</b> = <code>/tmp/nifi/nifiprocess</code>.
                   </li>
                   <li>
                     Agrega <code>NEL FetchFile</code> y auto-termina
@@ -5748,10 +5746,17 @@ FlowFile Attribute Map Content
                   </li>
                   <li>
                     Agrega <code>NEL PutFile</code> con <b>Directory</b> =
-                    <code>/tmp/nifi/nel</code>, <code>replace</code>, y
+                    <code>/tmp/nifi/#{user}/xml</code>, <code>replace</code>, y
                     auto-terminate de <code>failure</code> y
                     <code>success</code>. Conecta RouteOnAttribute → PutFile con
                     <code>isXML</code>.
+                  </li>
+                  <li>
+                    Agrega otro <code>PutFile</code> con <b>Directory</b> =
+                    <code>/tmp/nifi/#{user}/otros</code>, <code>replace</code>,
+                    y auto-terminate de <code>failure</code> y
+                    <code>success</code>. Conecta RouteOnAttribute → PutFile con
+                    <code>unmatched</code>.
                   </li>
                 </ol>
               </div>
