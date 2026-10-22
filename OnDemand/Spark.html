@@ -3018,7 +3018,11 @@ SparkSession available as &#x27;spark&#x27;.
 &gt;&gt;&gt; spark.version
 &#x27;3.x.x&#x27;
 &gt;&gt;&gt; exit()
-[USER@gateway ~]$</pre
+[USER@gateway ~]$
+
+pyspark \
+  --master yarn --num-executors 2 --executor-cores 2 --executor-memory 2g --driver-memory 1g \
+  --conf spark.executor.memoryOverhead=1g --conf spark.dynamicAllocation.enabled=true --conf spark.dynamicAllocation.minExecutors=0 --conf spark.dynamicAllocation.initialExecutors=1 --conf spark.dynamicAllocation.maxExecutors=2</pre
                 >
                 <div class="call warn">
                   <b>Mensajes WARN</b>
@@ -3777,6 +3781,7 @@ spark.sql(&quot;&quot;&quot;
                 >
 # Lab 3 · Parte 1  (ejecuta antes el BLOQUE DE INICIO)
 spark.sql(&quot;CREATE DATABASE IF NOT EXISTS &quot; + BASE)
+
 def guardar(df, tabla, particion=None):
     w = (df.write.mode(&quot;overwrite&quot;).format(&quot;parquet&quot;)
            .option(&quot;path&quot;, RAIZ + &quot;/fuentes/&quot; + tabla))
@@ -3790,6 +3795,7 @@ plantas = spark.createDataFrame(
      (&quot;P3&quot;, &quot;Planta Sur&quot;, &quot;Sur&quot;), (&quot;P4&quot;, &quot;Planta Oriente&quot;, &quot;Oriente&quot;)],
     [&quot;id_planta&quot;, &quot;nombre_planta&quot;, &quot;region&quot;])
 guardar(plantas, &quot;plantas&quot;)
+
 equipos = spark.sql(&quot;&quot;&quot;
   SELECT format_string(&#x27;E%03d&#x27;, id) AS id_equipo,
          CASE WHEN id = 60 THEN &#x27;P9&#x27;
@@ -3800,6 +3806,7 @@ equipos = spark.sql(&quot;&quot;&quot;
                     cast(id % 3 + 1 AS int)) AS marca
   FROM range(1, 61)&quot;&quot;&quot;)
 guardar(equipos, &quot;equipos&quot;)
+
 v_ot = spark.sql(&quot;&quot;&quot;
   SELECT id AS n, format_string(&#x27;OT%06d&#x27;, id) AS id_ot,
          format_string(&#x27;E%03d&#x27;, (id * 7) % 62 + 1) AS id_equipo,
@@ -3810,6 +3817,7 @@ v_ot = spark.sql(&quot;&quot;&quot;
               WHEN id % 7 = 0 THEN &#x27;ABIERTA&#x27; ELSE &#x27;CERRADA&#x27; END AS estado,
          cast(2 + id % 9 AS int) AS horas_planificadas
   FROM range(1, 24001)&quot;&quot;&quot;).withColumn(&quot;mes&quot;, F.date_format(&quot;fecha&quot;, &quot;yyyy-MM&quot;))
+
 v_ot.createOrReplaceTempView(&quot;v_ot&quot;)
 guardar(v_ot.drop(&quot;n&quot;), &quot;ordenes_trabajo&quot;, &quot;mes&quot;)</pre
                 >
@@ -3876,6 +3884,7 @@ cierres = spark.sql(&quot;&quot;&quot;
          format_string(&#x27;TEC%02d&#x27;, n % 25 + 1), 5
   FROM v_ot WHERE estado = &#x27;CERRADA&#x27; AND n % 1000 = 1&quot;&quot;&quot;)
 guardar(cierres, &quot;cierres_ot&quot;)
+
 consumo = spark.sql(&quot;&quot;&quot;
   SELECT id_ot, format_string(&#x27;R%03d&#x27;, (n + j) % 50 + 1) AS codigo_repuesto,
          cast(1 + (n + j) % 3 AS int) AS cantidad,
@@ -3993,7 +4002,13 @@ spark.sql(&quot;SHOW TABLES IN &quot; + BASE).show()</pre
                   <li>
                     <b>Archivos CSV</b> (texto separado por comas): se leen
                     indicando si tienen encabezado y pidiendo a Spark que
-                    deduzca los tipos.
+                    deduzca (inferir) los tipos de datos. No es recomendado usar
+                    la opción <code>inferSchema</code> en <code>true</code> con
+                    datos de texto plano (csv, json, etc) debido a que Spark
+                    debe leer todos los registros de los archivos para deducir
+                    la información. Se recomienda SIEMPRE pasarle el esquema de
+                    datos a Spark. Si los datos están en Parquet u ORC, podemos
+                    inferir el esquema.
                   </li>
                   <li>
                     <b>Archivos Parquet</b>: formato optimizado que ya guarda
@@ -4134,15 +4149,15 @@ eq.count()</pre
                     <th>Cómo se escribe</th>
                   </tr>
                   <tr>
-                    <td>Igual a</td>
+                    <td>Igual a (==)</td>
                     <td><code>F.col("estado") == "CERRADA"</code></td>
                   </tr>
                   <tr>
-                    <td>Distinto de</td>
+                    <td>Distinto de (!=)</td>
                     <td><code>F.col("estado") != "ANULADA"</code></td>
                   </tr>
                   <tr>
-                    <td>Mayor / menor</td>
+                    <td>Mayor / menor (>=)</td>
                     <td><code>F.col("horas_planificadas") &gt;= 8</code></td>
                   </tr>
                   <tr>
