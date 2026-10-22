@@ -3750,9 +3750,9 @@ ListFile → FetchFile
                   al ambiente.
                 </p>
                 <pre class="code">
-input.dir = /tmp/nifi-plata/alumno01/r01/entrada
+input.dir = /tmp/training_materials/nifi/data/datos
 run.id = r01
-hdfs.root = /user/workshop/alumno01/plata
+hdfs.root = /user/alumno01/workshop/plata
 kafka.topic = ws.plata.alumno01.r01
 kafka.group = ws-plata-alumno01-r01
 kafka.brokers = BROKER_REAL:PUERTO</pre
@@ -3858,23 +3858,6 @@ Hadoop Configuration Resources = #{hadoop.resources}
 Conflict Resolution Strategy = fail
 success → QueryRecord</pre
                 >
-                <p>
-                  Con el flujo listo, ejecuta desde la carpeta del kit en el
-                  servidor o montaje de NiFi:
-                </p>
-                <pre class="code">
-python3 enviar_lotes.py \
-  --destino /tmp/nifi-plata/alumno01/r01/entrada \
-  --intervalo 30</pre
-                >
-                <div class="call tip">
-                  <b>Llegada de lotes</b>
-                  <div>
-                    El emisor publica tres CSV completos mediante renombrado de
-                    archivos .part. No limpies el estado de ListFile durante la
-                    ejecución.
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -4371,7 +4354,7 @@ CREATE TABLE ws_alumno01.operacion_plata_r01 (
   source_system STRING
 )
 STORED BY ICEBERG
-LOCATION &#x27;/user/workshop/alumno01/plata/r01/iceberg/operacion_plata&#x27;
+LOCATION &#x27;/user/alumno01/workshop/plata/r01/iceberg/operacion_plata&#x27;
 TBLPROPERTIES (&#x27;format-version&#x27; = &#x27;2&#x27;);</pre
                 >
                 <p>
@@ -4682,11 +4665,11 @@ ORDER BY batch_id;
                 </p>
                 <pre class="code">
 hdfs dfs -cat \
-  &#x27;/user/workshop/alumno01/plata/r01/validos/*.jsonl&#x27; \
+  &#x27;/user/alumno01/workshop/plata/r01/validos/*.jsonl&#x27; \
   &gt; validos.jsonl
 
 hdfs dfs -cat \
-  &#x27;/user/workshop/alumno01/plata/r01/rechazados/*.jsonl&#x27; \
+  &#x27;/user/alumno01/workshop/plata/r01/rechazados/*.jsonl&#x27; \
   &gt; rechazados.jsonl
 
 python3 validar.py --validos validos.jsonl \
