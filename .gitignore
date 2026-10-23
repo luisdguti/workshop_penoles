@@ -6,6 +6,7 @@
 !/InSitu/
 !/Datos/
 !/Templates/
+!/Actividades/
 
 # Datos voluminosos reproducibles y archivos locales.
 /Datos/plata/ampliado/
@@ -19,3 +20,10 @@
 *.ppt
 *.pptx
 .env
+/Actividades/entregas/
+/Actividades/*_ranking.csv
+/Actividades/*_entregas.json
+/Actividades/PLATA-*_P*.json
+/Actividades/peñoles-*_P*.json
+
+/Actividades/PENOLES-*_P*.json

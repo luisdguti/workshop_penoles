@@ -14,6 +14,16 @@ Descarga o clona el repositorio y abre los HTML en el navegador. Algunos recurso
 1. [NiFi](InSitu/NiFi.html): ingesta e integrador de operación de plata.
 2. [Spark e Iceberg](InSitu/Spark_Iceberg.html): transformación y consumo de la salida de NiFi.
 
+## Actividad de cierre — Caza de errores
+
+Reto individual de 8 minutos sobre NiFi, Spark e Iceberg, con 10 premios. Funciona en el navegador sin conectarse al clúster.
+
+- [Abrir el reto](Actividades/Caza_de_errores.html).
+- [Guía para organizar la actividad](Actividades/README.md).
+- [Panel del instructor: importar entregas y calcular el ranking](Actividades/Resultados.html).
+
+Descarga el HTML y ábrelo en tu navegador; la vista de archivos de GitHub muestra su código, no ejecuta la actividad.
+
 ## Datos
 
 - [users.txt](Datos/users.txt): archivo reservado para el ejercicio de NiFi; **pendiente de completar**.
