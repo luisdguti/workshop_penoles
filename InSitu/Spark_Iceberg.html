@@ -1678,6 +1678,17 @@
                 <ol class="steps">
                   <li>Adapta ALUMNO y RUN a la ingesta terminada.</li>
                   <li>Elige LAB nuevo para todas las salidas.</li>
+                  <li>
+                    Inicia la session de PyPspark con los mismos parámetros y
+                    configuraciones del modulo anterior. Si no recuerda los
+                    parámetros, consulta la documentación. <b>Nota:</b> agrega
+                    el puerto de ser necesario entre el rango
+                    <code>4060-4240</code> con la PUERTO por el puerto deseado).
+                    Si tienes errores de configuración
+                    <code>--conf spark.ui.port=PUERTO</code> (si obtienes el
+                    error de <b>Connection Refused</b>, intenta con otro puerto
+                    dentro del rango)
+                  </li>
                   <li>Anota applicationId; lo buscaremos en YARN.</li>
                 </ol>
                 <div class="call tip">
@@ -1692,7 +1703,7 @@ import re, time
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 usuario = spark.sparkContext.sparkUser()
-BASE = "ws_" + re.sub(r"[^a-z0-9_]", "_", usuario.lower())
+BASE = "USUARIO" # Cambia USUARIO por tu usuario de la sesión OnDemand.
 RUN = "r01"
 LAB = "l01"
 SESION = "a01"
